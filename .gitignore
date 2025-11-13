@@ -1,0 +1,16 @@
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Research outputs
+permit-research-results.json
+
+# Virtual environment
+venv/
+env/

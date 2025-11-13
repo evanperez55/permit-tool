@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permit Assistant - Smart Pricing & Requirements for Contractors</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(214.3 31.8% 91.4%)",
+                        input: "hsl(214.3 31.8% 91.4%)",
+                        ring: "hsl(222.2 84% 4.9%)",
+                        background: "hsl(0 0% 100%)",
+                        foreground: "hsl(222.2 84% 4.9%)",
+                        primary: {
+                            DEFAULT: "hsl(222.2 47.4% 11.2%)",
+                            foreground: "hsl(210 40% 98%)",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(210 40% 96.1%)",
+                            foreground: "hsl(222.2 47.4% 11.2%)",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(210 40% 96.1%)",
+                            foreground: "hsl(215.4 16.3% 46.9%)",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(210 40% 96.1%)",
+                            foreground: "hsl(222.2 47.4% 11.2%)",
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(0 84.2% 60.2%)",
+                            foreground: "hsl(210 40% 98%)",
+                        },
+                        success: {
+                            DEFAULT: "hsl(142.1 76.2% 36.3%)",
+                            foreground: "hsl(355.7 100% 97.3%)",
+                        }
+                    },
+                    borderRadius: {
+                        lg: "0.5rem",
+                        md: "calc(0.5rem - 2px)",
+                        sm: "calc(0.5rem - 4px)",
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to bottom right, hsl(210 40% 98%), hsl(214.3 31.8% 91.4%));
+            min-height: 100vh;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: hsl(210 40% 96.1%);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: hsl(215.4 16.3% 46.9%);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: hsl(222.2 47.4% 11.2%);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .animate-pulse-slow {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Button hover effects */
+        .btn-primary {
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        /* Card hover */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Form focus rings */
+        .form-input:focus {
+            outline: none;
+            border-color: hsl(222.2 84% 4.9%);
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid hsl(210 40% 96.1%);
+            border-top-color: hsl(222.2 47.4% 11.2%);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Badge styles */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.625rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .badge-success {
+            background: hsl(142.1 76.2% 36.3% / 0.1);
+            color: hsl(142.1 76.2% 36.3%);
+        }
+
+        .badge-warning {
+            background: hsl(38 92% 50% / 0.1);
+            color: hsl(38 92% 30%);
+        }
+
+        /* Results content styling */
+        .results-content h2 {
+            color: hsl(222.2 47.4% 11.2%);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem 0;
+            padding-top: 1rem;
+            border-top: 1px solid hsl(214.3 31.8% 91.4%);
+        }
+
+        .results-content h2:first-child {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+
+        .results-content ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .results-content li {
+            margin-bottom: 0.5rem;
+            color: hsl(215.4 16.3% 26.9%);
+        }
+
+        .results-content strong {
+            color: hsl(222.2 47.4% 11.2%);
+            font-weight: 600;
+        }
+
+        /* Pricing card styles */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .pricing-item {
+            background: white;
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            transition: all 0.2s;
+        }
+
+        .pricing-item:hover {
+            border-color: hsl(222.2 47.4% 11.2%);
+            box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        <!-- Header -->
+        <header class="text-center mb-12 animate-fade-in">
+            <div class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-1.5 rounded-full text-sm font-medium mb-4">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span>Powered by AI + Real Permit Data</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-foreground mb-3">
+                Permit Assistant
+            </h1>
+            <p class="text-xl text-muted-foreground mb-6">
+                Know exactly what to charge clients for permit work
+            </p>
+            <div class="flex flex-wrap justify-center gap-3 text-sm">
+                <span class="badge badge-success">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    Instant pricing calculations
+                </span>
+                <span class="badge badge-success">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    Labor cost breakdown
+                </span>
+                <span class="badge badge-success">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    Client-ready quotes
+                </span>
+            </div>
+        </header>
+
+        <!-- Main Form Card -->
+        <div id="formCard" class="bg-white border border-border rounded-lg shadow-sm p-6 md:p-8 mb-6 animate-fade-in card-hover">
+            <form id="permitForm" class="space-y-6">
+                <div class="space-y-4">
+                    <div>
+                        <label for="jobType" class="block text-sm font-medium text-foreground mb-2">
+                            What type of work are you doing? <span class="text-destructive">*</span>
+                        </label>
+                        <select id="jobType" required class="form-input w-full px-4 py-2.5 border border-input rounded-md bg-background text-foreground text-base focus:outline-none focus:ring-2 focus:ring-ring">
+                            <option value="">Select job type...</option>
+                            <option value="Electrical Work">Electrical Work</option>
+                            <option value="Plumbing">Plumbing</option>
+                            <option value="HVAC">HVAC</option>
+                            <option value="Roofing">Roofing</option>
+                            <option value="General Construction">General Construction</option>
+                            <option value="Remodeling/Renovation">Remodeling/Renovation</option>
+                            <option value="Solar Installation">Solar Installation</option>
+                            <option value="Pool/Spa">Pool/Spa</option>
+                            <option value="Fence/Deck">Fence/Deck</option>
+                            <option value="Demolition">Demolition</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="city" class="block text-sm font-medium text-foreground mb-2">
+                                City <span class="text-destructive">*</span>
+                            </label>
+                            <input type="text" id="city" placeholder="e.g., Los Angeles" required class="form-input w-full px-4 py-2.5 border border-input rounded-md bg-background text-foreground">
+                        </div>
+
+                        <div>
+                            <label for="state" class="block text-sm font-medium text-foreground mb-2">
+                                State <span class="text-destructive">*</span>
+                            </label>
+                            <select id="state" required class="form-input w-full px-4 py-2.5 border border-input rounded-md bg-background text-foreground">
+                                <option value="">Select state...</option>
+                                <option value="AL">Alabama</option>
+                                <option value="AK">Alaska</option>
+                                <option value="AZ">Arizona</option>
+                                <option value="AR">Arkansas</option>
+                                <option value="CA">California</option>
+                                <option value="CO">Colorado</option>
+                                <option value="CT">Connecticut</option>
+                                <option value="DE">Delaware</option>
+                                <option value="FL">Florida</option>
+                                <option value="GA">Georgia</option>
+                                <option value="HI">Hawaii</option>
+                                <option value="ID">Idaho</option>
+                                <option value="IL">Illinois</option>
+                                <option value="IN">Indiana</option>
+                                <option value="IA">Iowa</option>
+                                <option value="KS">Kansas</option>
+                                <option value="KY">Kentucky</option>
+                                <option value="LA">Louisiana</option>
+                                <option value="ME">Maine</option>
+                                <option value="MD">Maryland</option>
+                                <option value="MA">Massachusetts</option>
+                                <option value="MI">Michigan</option>
+                                <option value="MN">Minnesota</option>
+                                <option value="MS">Mississippi</option>
+                                <option value="MO">Missouri</option>
+                                <option value="MT">Montana</option>
+                                <option value="NE">Nebraska</option>
+                                <option value="NV">Nevada</option>
+                                <option value="NH">New Hampshire</option>
+                                <option value="NJ">New Jersey</option>
+                                <option value="NM">New Mexico</option>
+                                <option value="NY">New York</option>
+                                <option value="NC">North Carolina</option>
+                                <option value="ND">North Dakota</option>
+                                <option value="OH">Ohio</option>
+                                <option value="OK">Oklahoma</option>
+                                <option value="OR">Oregon</option>
+                                <option value="PA">Pennsylvania</option>
+                                <option value="RI">Rhode Island</option>
+                                <option value="SC">South Carolina</option>
+                                <option value="SD">South Dakota</option>
+                                <option value="TN">Tennessee</option>
+                                <option value="TX">Texas</option>
+                                <option value="UT">Utah</option>
+                                <option value="VT">Vermont</option>
+                                <option value="VA">Virginia</option>
+                                <option value="WA">Washington</option>
+                                <option value="WV">West Virginia</option>
+                                <option value="WI">Wisconsin</option>
+                                <option value="WY">Wyoming</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="projectType" class="block text-sm font-medium text-foreground mb-2">
+                                Project Type
+                            </label>
+                            <select id="projectType" class="form-input w-full px-4 py-2.5 border border-input rounded-md bg-background text-foreground">
+                                <option value="Residential">Residential</option>
+                                <option value="Commercial">Commercial</option>
+                                <option value="Industrial">Industrial</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="scope" class="block text-sm font-medium text-foreground mb-2">
+                                Scope of Work
+                            </label>
+                            <select id="scope" class="form-input w-full px-4 py-2.5 border border-input rounded-md bg-background text-foreground">
+                                <option value="New Installation">New Installation</option>
+                                <option value="Repair/Service">Repair/Service</option>
+                                <option value="Replacement">Replacement</option>
+                                <option value="Renovation">Renovation</option>
+                                <option value="Addition">Addition</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-foreground mb-2">
+                            Brief Description (Optional)
+                        </label>
+                        <textarea id="description" rows="3" placeholder="e.g., Installing 200amp service panel upgrade" class="form-input w-full px-4 py-2.5 border border-input rounded-md bg-background text-foreground resize-none"></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary w-full bg-primary text-primary-foreground px-6 py-3 rounded-md font-semibold text-base disabled:opacity-50 disabled:cursor-not-allowed">
+                    Get Pricing & Requirements
+                    <svg class="inline-block w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                </button>
+            </form>
+        </div>
+
+        <!-- Jurisdiction Comparison Feature -->
+        <div id="comparisonCard" class="bg-white border border-border rounded-lg shadow-sm p-6 mb-6 card-hover">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <div>
+                        <h3 class="text-lg font-semibold text-foreground">Compare Multiple Jurisdictions</h3>
+                        <p class="text-sm text-muted-foreground">See pricing differences across cities you work in</p>
+                    </div>
+                </div>
+                <button onclick="toggleComparison()" id="toggleComparisonBtn" class="btn-primary px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium text-sm">
+                    <span id="toggleBtnText">Compare Cities</span>
+                    <svg id="toggleBtnIcon" class="inline-block w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Comparison Panel (Hidden by default) -->
+            <div id="comparisonPanel" class="hidden mt-6 pt-6 border-t border-border">
+                <div class="space-y-6">
+                    <!-- Jurisdiction Selection -->
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-3">
+                            Select Jurisdictions to Compare (2-5 cities)
+                        </label>
+                        <div id="jurisdictionCheckboxes" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Job Type for Comparison -->
+                    <div>
+                        <label for="comparisonJobType" class="block text-sm font-medium text-foreground mb-2">
+                            Job Type <span class="text-destructive">*</span>
+                        </label>
+                        <select id="comparisonJobType" class="form-input w-full px-4 py-2.5 border border-input rounded-md bg-background text-foreground">
+                            <option value="">Select job type...</option>
+                            <option value="Electrical">Electrical</option>
+                            <option value="Plumbing">Plumbing</option>
+                            <option value="HVAC">HVAC</option>
+                            <option value="General Construction">General Construction</option>
+                            <option value="Remodeling">Remodeling</option>
+                            <option value="Solar">Solar</option>
+                            <option value="Roofing">Roofing</option>
+                            <option value="Pool">Pool</option>
+                            <option value="Fence">Fence</option>
+                            <option value="Demolition">Demolition</option>
+                        </select>
+                    </div>
+
+                    <!-- Compare Button -->
+                    <button onclick="compareJurisdictions()" id="compareBtn" class="btn-primary w-full bg-primary text-primary-foreground px-6 py-3 rounded-md font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg class="inline-block w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        Compare Selected Cities
+                    </button>
+                </div>
+
+                <!-- Comparison Results -->
+                <div id="comparisonResults" class="hidden mt-8 pt-8 border-t border-border">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="hidden bg-white border border-border rounded-lg shadow-sm p-12 text-center animate-fade-in">
+            <div class="spinner mx-auto mb-4"></div>
+            <p class="text-foreground font-medium mb-2">Analyzing permit requirements & calculating pricing...</p>
+            <p class="text-muted-foreground text-sm">This takes 10-15 seconds</p>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden space-y-6">
+            <!-- Pricing Calculator Card (Main Feature) -->
+            <div class="bg-white border-2 border-primary rounded-lg shadow-lg p-6 animate-fade-in">
+                <div class="flex items-start justify-between mb-6">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <h2 class="text-2xl font-bold text-foreground">What to Charge Your Client</h2>
+                        </div>
+                        <p class="text-muted-foreground text-sm" id="pricingLocation"></p>
+                    </div>
+                    <span class="badge badge-success">Recommended</span>
+                </div>
+
+                <!-- Big Number Display -->
+                <div class="bg-accent/50 border border-border rounded-lg p-6 mb-6 text-center">
+                    <p class="text-sm font-medium text-muted-foreground mb-2">Recommended Charge</p>
+                    <p class="text-5xl font-bold text-foreground mb-2" id="recommendedCharge">$0</p>
+                    <div class="flex items-center justify-center gap-4 text-sm">
+                        <span class="text-muted-foreground">
+                            Your profit: <strong class="text-success" id="yourProfit">$0</strong>
+                        </span>
+                        <span class="text-muted-foreground">•</span>
+                        <span class="text-muted-foreground">
+                            <strong id="profitMargin">0</strong>% margin
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Cost Breakdown -->
+                <div class="space-y-4 mb-6">
+                    <h3 class="font-semibold text-foreground flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        Cost Breakdown
+                    </h3>
+                    <div class="pricing-grid" id="costBreakdown">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Labor Time Breakdown -->
+                <div class="bg-muted rounded-lg p-4">
+                    <h4 class="font-semibold text-sm text-foreground mb-3">Time Investment</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm" id="laborBreakdown">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Competitive Intelligence -->
+            <div class="bg-white border border-border rounded-lg shadow-sm p-6 animate-fade-in">
+                <h3 class="font-semibold text-foreground flex items-center gap-2 mb-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    Competitive Intelligence
+                </h3>
+                <div class="space-y-3" id="competitiveInfo">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Client Communication Templates -->
+            <div class="bg-white border border-border rounded-lg shadow-sm p-6 animate-fade-in">
+                <h3 class="font-semibold text-foreground flex items-center gap-2 mb-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    </svg>
+                    Client Communication Templates
+                </h3>
+                <p class="text-sm text-muted-foreground mb-4">
+                    Professional templates to help you justify permit costs and compete against unlicensed workers
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="clientTemplates">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Required Paperwork -->
+            <div class="bg-white border border-border rounded-lg shadow-sm p-6 animate-fade-in">
+                <h3 class="font-semibold text-foreground flex items-center gap-2 mb-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Required Paperwork
+                    <span id="paperworkBadge" class="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs font-medium rounded-full"></span>
+                </h3>
+                <p class="text-sm text-muted-foreground mb-4">
+                    Direct links to official permit forms and documents - verified current as of the dates shown
+                </p>
+
+                <!-- Prep Time Estimate -->
+                <div id="prepTimeEstimate" class="bg-muted/30 border border-border rounded-md p-4 mb-4">
+                    <!-- Will be populated dynamically -->
+                </div>
+
+                <!-- Applications -->
+                <div id="paperworkApplications" class="mb-4">
+                    <!-- Will be populated dynamically -->
+                </div>
+
+                <!-- Supporting Documents -->
+                <div id="paperworkSupporting" class="mb-4">
+                    <!-- Will be populated dynamically -->
+                </div>
+
+                <!-- Fee Schedules -->
+                <div id="paperworkFeeSchedules" class="mb-4">
+                    <!-- Will be populated dynamically -->
+                </div>
+
+                <!-- Helpful Tips -->
+                <div id="paperworkTips" class="bg-blue-50 border border-blue-200 rounded-md p-4">
+                    <!-- Will be populated dynamically -->
+                </div>
+
+                <!-- Report Broken Link -->
+                <div class="mt-4 pt-4 border-t border-border">
+                    <p class="text-xs text-muted-foreground">
+                        Found a broken link or outdated form?
+                        <button onclick="showReportLinkModal()" class="text-primary hover:underline font-medium">
+                            Report it here
+                        </button>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Permit Requirements -->
+            <div class="bg-white border border-border rounded-lg shadow-sm p-6 animate-fade-in">
+                <h3 class="font-semibold text-foreground flex items-center gap-2 mb-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Detailed Permit Requirements
+                </h3>
+                <div class="results-content prose max-w-none" id="requirementsContent">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap gap-3">
+                <button onclick="window.print()" class="flex-1 min-w-[140px] bg-secondary text-secondary-foreground px-4 py-2.5 rounded-md font-medium text-sm hover:bg-secondary/80 transition-colors">
+                    <svg class="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    Print
+                </button>
+                <button onclick="emailResults()" class="flex-1 min-w-[140px] bg-secondary text-secondary-foreground px-4 py-2.5 rounded-md font-medium text-sm hover:bg-secondary/80 transition-colors">
+                    <svg class="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    Email
+                </button>
+                <button onclick="copyToClipboard()" class="flex-1 min-w-[140px] bg-secondary text-secondary-foreground px-4 py-2.5 rounded-md font-medium text-sm hover:bg-secondary/80 transition-colors">
+                    <svg class="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    Copy
+                </button>
+            </div>
+
+            <!-- Reset Button -->
+            <button onclick="resetForm()" class="w-full bg-secondary text-secondary-foreground px-4 py-3 rounded-md font-medium hover:bg-secondary/80 transition-colors">
+                Check Another Permit
+            </button>
+        </div>
+    </div>
+
+    <!-- Template Modal -->
+    <div id="templateModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
+        <div class="bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
+            <div class="flex items-center justify-between p-6 border-b border-border">
+                <h3 class="text-xl font-bold text-foreground" id="modalTitle">Template</h3>
+                <button onclick="closeModal()" class="text-muted-foreground hover:text-foreground transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+                <textarea id="modalContent" class="w-full h-96 p-4 border border-input rounded-md font-mono text-sm bg-muted/30" readonly></textarea>
+            </div>
+            <div class="flex gap-3 p-6 border-t border-border bg-muted/30">
+                <button onclick="copyTemplate()" class="flex-1 bg-primary text-primary-foreground px-4 py-2.5 rounded-md font-medium hover:bg-primary/90 transition-colors">
+                    <svg class="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    Copy to Clipboard
+                </button>
+                <button onclick="emailTemplate()" class="flex-1 bg-secondary text-secondary-foreground px-4 py-2.5 rounded-md font-medium hover:bg-secondary/80 transition-colors">
+                    <svg class="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    Email This
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5001/api/check-requirements';
+        let currentData = null;
+        let currentTemplate = null;
+
+        const form = document.getElementById('permitForm');
+        const formCard = document.getElementById('formCard');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const data = {
+                jobType: document.getElementById('jobType').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                projectType: document.getElementById('projectType').value,
+                scope: document.getElementById('scope').value,
+                description: document.getElementById('description').value
+            };
+
+            // Show loading
+            formCard.classList.add('hidden');
+            loading.classList.remove('hidden');
+            results.classList.add('hidden');
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    currentData = result;
+                    displayResults(result);
+
+                    loading.classList.add('hidden');
+                    results.classList.remove('hidden');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    throw new Error(result.error || 'Failed to get requirements');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message + '\n\nMake sure the backend server is running on port 5001.');
+                formCard.classList.remove('hidden');
+                loading.classList.add('hidden');
+            }
+        });
+
+        function displayResults(data) {
+            const { pricing, clientExplanation, requirements, metadata, clientTemplates } = data;
+
+            // Location
+            document.getElementById('pricingLocation').textContent = `${metadata.jobType} in ${metadata.location}`;
+
+            // Main pricing
+            document.getElementById('recommendedCharge').textContent = `$${pricing.summary.recommendedCharge.toLocaleString()}`;
+            document.getElementById('yourProfit').textContent = `$${pricing.summary.yourProfit.toLocaleString()}`;
+            document.getElementById('profitMargin').textContent = pricing.summary.profitMargin;
+
+            // Cost breakdown
+            const costBreakdown = document.getElementById('costBreakdown');
+            costBreakdown.innerHTML = clientExplanation.breakdown.map(item => `
+                <div class="pricing-item">
+                    <p class="text-xs text-muted-foreground mb-1">${item.item}</p>
+                    <p class="text-lg font-bold text-foreground">$${item.cost}</p>
+                    <p class="text-xs text-muted-foreground mt-1">${item.description}</p>
+                </div>
+            `).join('');
+
+            // Labor breakdown
+            const laborBreakdown = document.getElementById('laborBreakdown');
+            const labor = pricing.labor.breakdown;
+            laborBreakdown.innerHTML = Object.entries(labor).map(([key, value]) => `
+                <div class="flex items-center justify-between">
+                    <span class="text-muted-foreground capitalize">${key.replace(/([A-Z])/g, ' $1').trim()}:</span>
+                    <span class="font-semibold text-foreground">${value.hours}h</span>
+                </div>
+            `).join('');
+
+            // Competitive info
+            const competitive = document.getElementById('competitiveInfo');
+            competitive.innerHTML = `
+                <div class="flex items-center justify-between p-3 bg-destructive/10 rounded-md">
+                    <span class="text-sm font-medium">Unlicensed contractor might charge:</span>
+                    <span class="font-semibold text-destructive">~$${pricing.competitive.unlicensedContractorPrice}</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-muted rounded-md">
+                    <span class="text-sm font-medium">Permit expediter service:</span>
+                    <span class="font-semibold">~$${pricing.competitive.expediterServicePrice}</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-success/10 rounded-md">
+                    <span class="text-sm font-medium">Your competitive price:</span>
+                    <span class="font-semibold text-success">$${pricing.summary.recommendedCharge}</span>
+                </div>
+                <p class="text-xs text-muted-foreground mt-2">
+                    💡 <strong>Your advantage:</strong> ${pricing.competitive.yourAdvantage}
+                </p>
+            `;
+
+            // Client templates
+            const templatesContainer = document.getElementById('clientTemplates');
+            const templates = [
+                { key: 'professionalQuote', title: 'Professional Quote', icon: '💰', desc: 'Complete pricing breakdown for client' },
+                { key: 'permitValue', title: 'Permit Value Email', icon: '✅', desc: 'Explain why permits matter' },
+                { key: 'permitExplainer', title: 'Quick Explainer', icon: '📚', desc: 'Simple guide for clients' },
+                { key: 'comparisonSheet', title: 'Licensed vs Unlicensed', icon: '⚖️', desc: 'Show the real comparison' },
+                { key: 'paymentOptions', title: 'Payment Plans', icon: '💳', desc: 'Flexible payment options' }
+            ];
+
+            templatesContainer.innerHTML = templates.map(template => `
+                <button onclick="showTemplate('${template.key}', '${template.title}')" class="text-left bg-accent/50 hover:bg-accent border border-border rounded-lg p-4 transition-all hover:shadow-md">
+                    <div class="flex items-start gap-3">
+                        <span class="text-2xl">${template.icon}</span>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-foreground mb-1">${template.title}</h4>
+                            <p class="text-xs text-muted-foreground">${template.desc}</p>
+                        </div>
+                        <svg class="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                </button>
+            `).join('');
+
+            // Fetch and display permit paperwork
+            fetchPaperwork(metadata.location, metadata.jobType);
+
+            // Requirements
+            document.getElementById('requirementsContent').innerHTML = marked.parse(requirements);
+        }
+
+        async function fetchPaperwork(jurisdiction, jobType) {
+            try {
+                const response = await fetch('http://localhost:5001/api/complete-paperwork-package', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ jurisdiction, jobType })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch paperwork');
+                }
+
+                const paperwork = await response.json();
+
+                if (!paperwork.success) {
+                    displayNoPaperwork(jurisdiction, jobType);
+                    return;
+                }
+
+                displayPaperwork(paperwork);
+            } catch (error) {
+                console.error('Error fetching paperwork:', error);
+                displayNoPaperwork(jurisdiction, jobType);
+            }
+        }
+
+        function displayPaperwork(paperwork) {
+            // Badge
+            document.getElementById('paperworkBadge').textContent = `${paperwork.totalForms} forms`;
+
+            // Prep time estimate
+            const prepTime = paperwork.estimatedPrepTime;
+            document.getElementById('prepTimeEstimate').innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-semibold text-foreground mb-1">Estimated Prep Time</p>
+                        <p class="text-xs text-muted-foreground">${prepTime.note}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-primary">${prepTime.estimatedHours}h</p>
+                        <p class="text-xs text-muted-foreground">${prepTime.estimatedMinutes} minutes</p>
+                    </div>
+                </div>
+            `;
+
+            // Applications
+            if (paperwork.applications.length > 0) {
+                document.getElementById('paperworkApplications').innerHTML = `
+                    <h4 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Required Applications
+                    </h4>
+                    <div class="space-y-2">
+                        ${paperwork.applications.map(form => `
+                            <a href="${form.url}" target="_blank" rel="noopener noreferrer" class="block bg-accent/30 hover:bg-accent border border-border rounded-md p-3 transition-all hover:shadow-sm">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-sm text-foreground mb-1">${form.formName}</p>
+                                        ${form.formCode ? `<p class="text-xs text-muted-foreground mb-1">Form Code: ${form.formCode}</p>` : ''}
+                                        <p class="text-xs text-muted-foreground">${form.description}</p>
+                                        <div class="flex items-center gap-3 mt-2">
+                                            ${form.isFillable ? '<span class="text-xs bg-success/20 text-success px-2 py-0.5 rounded">Fillable PDF</span>' : ''}
+                                            ${form.lastVerified ? `<span class="text-xs text-muted-foreground">Verified: ${form.lastVerified}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <svg class="w-5 h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                </div>
+                            </a>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // Supporting documents
+            if (paperwork.supporting.length > 0) {
+                document.getElementById('paperworkSupporting').innerHTML = `
+                    <h4 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Supporting Documents
+                    </h4>
+                    <div class="space-y-2">
+                        ${paperwork.supporting.map(form => `
+                            <a href="${form.url}" target="_blank" rel="noopener noreferrer" class="block bg-accent/30 hover:bg-accent border border-border rounded-md p-3 transition-all hover:shadow-sm">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-sm text-foreground mb-1">${form.formName}</p>
+                                        <p class="text-xs text-muted-foreground">${form.description}</p>
+                                    </div>
+                                    <svg class="w-5 h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                </div>
+                            </a>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // Fee schedules
+            if (paperwork.feeSchedules.length > 0) {
+                document.getElementById('paperworkFeeSchedules').innerHTML = `
+                    <h4 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Fee Schedules
+                    </h4>
+                    <div class="space-y-2">
+                        ${paperwork.feeSchedules.map(form => `
+                            <a href="${form.url}" target="_blank" rel="noopener noreferrer" class="block bg-accent/30 hover:bg-accent border border-border rounded-md p-3 transition-all hover:shadow-sm">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-sm text-foreground mb-1">${form.formName}</p>
+                                        <p class="text-xs text-muted-foreground">${form.description}</p>
+                                        ${form.revisionDate ? `<p class="text-xs text-muted-foreground mt-1">Effective: ${form.revisionDate}</p>` : ''}
+                                    </div>
+                                    <svg class="w-5 h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                </div>
+                            </a>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // Tips
+            if (paperwork.tips && paperwork.tips.length > 0) {
+                document.getElementById('paperworkTips').innerHTML = `
+                    <h4 class="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                        Helpful Tips
+                    </h4>
+                    <ul class="space-y-2 text-sm text-foreground">
+                        ${paperwork.tips.map(tip => `<li class="flex items-start gap-2"><span class="text-primary">•</span><span>${tip}</span></li>`).join('')}
+                    </ul>
+                `;
+            }
+
+            // Store current paperwork for reporting
+            window.currentPaperwork = paperwork;
+        }
+
+        function displayNoPaperwork(jurisdiction, jobType) {
+            document.getElementById('paperworkBadge').textContent = 'Coming soon';
+            document.getElementById('prepTimeEstimate').innerHTML = `
+                <p class="text-sm text-muted-foreground">
+                    Paperwork links for ${jobType} in ${jurisdiction} are not yet available. We're working on adding more jurisdictions!
+                </p>
+            `;
+            document.getElementById('paperworkApplications').innerHTML = '';
+            document.getElementById('paperworkSupporting').innerHTML = '';
+            document.getElementById('paperworkFeeSchedules').innerHTML = '';
+            document.getElementById('paperworkTips').innerHTML = `
+                <p class="text-sm text-muted-foreground">
+                    In the meantime, visit your local building department website to download required forms.
+                </p>
+            `;
+        }
+
+        function showReportLinkModal() {
+            if (!window.currentPaperwork) {
+                alert('No paperwork data available to report');
+                return;
+            }
+
+            const userEmail = prompt('Your email (optional):');
+            const issue = prompt('What\'s the issue? (broken_link, outdated, wrong_form, or other):');
+            const comments = prompt('Additional comments:');
+
+            if (!issue) {
+                return;
+            }
+
+            // Get the first form as an example (in a real implementation, you'd let user select which form)
+            const forms = [...currentPaperwork.applications, ...currentPaperwork.supporting, ...currentPaperwork.feeSchedules];
+            if (forms.length === 0) {
+                alert('No forms to report');
+                return;
+            }
+
+            const form = forms[0];
+
+            fetch('http://localhost:5001/api/report-broken-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    jurisdiction: currentPaperwork.jurisdiction,
+                    jobType: currentPaperwork.jobType,
+                    formCode: form.formCode || 'N/A',
+                    formName: form.formName,
+                    userEmail,
+                    issue,
+                    comments
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Thank you! Your report (ID: ${data.reportId}) has been submitted. We'll review it within 48 hours.`);
+                } else {
+                    alert('Failed to submit report. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting report:', error);
+                alert('Failed to submit report. Please try again.');
+            });
+        }
+
+        // Template modal functions
+        function showTemplate(templateKey, templateTitle) {
+            if (!currentData || !currentData.clientTemplates) return;
+
+            const template = currentData.clientTemplates[templateKey];
+            if (!template) return;
+
+            currentTemplate = template;
+
+            document.getElementById('modalTitle').textContent = templateTitle;
+            document.getElementById('modalContent').value = template.body;
+            document.getElementById('templateModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('templateModal').classList.add('hidden');
+        }
+
+        function copyTemplate() {
+            const content = document.getElementById('modalContent').value;
+            navigator.clipboard.writeText(content).then(() => {
+                alert('✓ Template copied to clipboard!');
+            });
+        }
+
+        function emailTemplate() {
+            if (!currentTemplate) return;
+
+            const subject = encodeURIComponent(currentTemplate.subject);
+            const body = encodeURIComponent(currentTemplate.body);
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        function resetForm() {
+            formCard.classList.remove('hidden');
+            results.classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function emailResults() {
+            if (currentData) {
+                const subject = encodeURIComponent(`Permit Pricing: ${currentData.metadata.jobType} - ${currentData.metadata.location}`);
+                const body = encodeURIComponent(`Permit pricing for ${currentData.metadata.jobType} in ${currentData.metadata.location}:\n\nRecommended charge: $${currentData.pricing.summary.recommendedCharge}\nYour profit: $${currentData.pricing.summary.yourProfit}\n\nView full details at Permit Assistant.`);
+                window.location.href = `mailto:?subject=${subject}&body=${body}`;
+            }
+        }
+
+        function copyToClipboard() {
+            if (currentData) {
+                const text = `Permit Pricing - ${currentData.metadata.jobType} in ${currentData.metadata.location}\n\nRecommended Charge: $${currentData.pricing.summary.recommendedCharge}\nYour Profit: $${currentData.pricing.summary.yourProfit}\nProfit Margin: ${currentData.pricing.summary.profitMargin}%\n\nPermit Fee: $${currentData.pricing.permitFee.permitFee}\nLabor Cost: $${currentData.pricing.labor.laborCost}\nTime Investment: ${currentData.pricing.summary.timeInvestment}\nProcessing Time: ${currentData.pricing.summary.processingTime}`;
+
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('✓ Pricing copied to clipboard!');
+                });
+            }
+        }
+
+        // ============================================
+        // JURISDICTION COMPARISON FUNCTIONS
+        // ============================================
+
+        let availableJurisdictions = [];
+        let selectedJurisdictions = [];
+
+        // Toggle comparison panel
+        function toggleComparison() {
+            const panel = document.getElementById('comparisonPanel');
+            const btnText = document.getElementById('toggleBtnText');
+            const btnIcon = document.getElementById('toggleBtnIcon');
+
+            if (panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden');
+                panel.classList.add('animate-fade-in');
+                btnText.textContent = 'Hide Comparison';
+                btnIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />';
+
+                // Load jurisdictions if not already loaded
+                if (availableJurisdictions.length === 0) {
+                    loadJurisdictions();
+                }
+            } else {
+                panel.classList.add('hidden');
+                btnText.textContent = 'Compare Cities';
+                btnIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />';
+            }
+        }
+
+        // Load available jurisdictions from API
+        async function loadJurisdictions() {
+            try {
+                const response = await fetch('http://localhost:5001/api/jurisdictions');
+                const data = await response.json();
+
+                if (data.success) {
+                    availableJurisdictions = data.jurisdictions;
+                    displayJurisdictionCheckboxes();
+                }
+            } catch (error) {
+                console.error('Error loading jurisdictions:', error);
+                alert('Failed to load jurisdictions. Please try again.');
+            }
+        }
+
+        // Display jurisdiction checkboxes
+        function displayJurisdictionCheckboxes() {
+            const container = document.getElementById('jurisdictionCheckboxes');
+
+            container.innerHTML = availableJurisdictions.map(j => `
+                <label class="flex items-start gap-3 p-3 border border-border rounded-md hover:bg-accent/30 cursor-pointer transition-colors">
+                    <input
+                        type="checkbox"
+                        value="${j.location}"
+                        onchange="updateSelectedJurisdictions()"
+                        class="mt-0.5 w-4 h-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
+                    />
+                    <div class="flex-1">
+                        <div class="font-medium text-sm text-foreground">${j.city}</div>
+                        <div class="text-xs text-muted-foreground">${j.state}</div>
+                    </div>
+                </label>
+            `).join('');
+        }
+
+        // Update selected jurisdictions array
+        function updateSelectedJurisdictions() {
+            const checkboxes = document.querySelectorAll('#jurisdictionCheckboxes input[type="checkbox"]');
+            selectedJurisdictions = Array.from(checkboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+
+            // Update compare button state
+            const compareBtn = document.getElementById('compareBtn');
+            compareBtn.disabled = selectedJurisdictions.length < 2 || selectedJurisdictions.length > 5;
+        }
+
+        // Execute jurisdiction comparison
+        async function compareJurisdictions() {
+            const jobType = document.getElementById('comparisonJobType').value;
+
+            if (!jobType) {
+                alert('Please select a job type');
+                return;
+            }
+
+            if (selectedJurisdictions.length < 2) {
+                alert('Please select at least 2 jurisdictions to compare');
+                return;
+            }
+
+            if (selectedJurisdictions.length > 5) {
+                alert('Please select no more than 5 jurisdictions');
+                return;
+            }
+
+            const compareBtn = document.getElementById('compareBtn');
+            const originalText = compareBtn.innerHTML;
+            compareBtn.disabled = true;
+            compareBtn.innerHTML = '<div class="inline-block spinner" style="width:20px;height:20px;border-width:2px;"></div><span class="ml-2">Comparing...</span>';
+
+            try {
+                const response = await fetch('http://localhost:5001/api/compare-jurisdictions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jurisdictions: selectedJurisdictions,
+                        jobType: jobType
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayComparisonResults(data.comparison, data.differences, jobType);
+                } else {
+                    throw new Error(data.error || 'Comparison failed');
+                }
+            } catch (error) {
+                console.error('Error comparing jurisdictions:', error);
+                alert('Failed to compare jurisdictions. Please try again.');
+            } finally {
+                compareBtn.disabled = false;
+                compareBtn.innerHTML = originalText;
+            }
+        }
+
+        // Display comparison results
+        function displayComparisonResults(comparison, differences, jobType) {
+            const resultsContainer = document.getElementById('comparisonResults');
+            resultsContainer.classList.remove('hidden');
+
+            const sorted = comparison.comparisons.sort((a, b) =>
+                a.pricing.recommendedCharge - b.pricing.recommendedCharge
+            );
+
+            let html = `
+                <div class="space-y-6">
+                    <!-- Summary Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-accent/30 rounded-lg p-4">
+                            <div class="text-sm text-muted-foreground mb-1">Lowest Charge</div>
+                            <div class="text-2xl font-bold text-success">$${comparison.analysis.lowestRecommendedCharge}</div>
+                            <div class="text-xs text-muted-foreground mt-1">${sorted[0].location}</div>
+                        </div>
+                        <div class="bg-accent/30 rounded-lg p-4">
+                            <div class="text-sm text-muted-foreground mb-1">Average Charge</div>
+                            <div class="text-2xl font-bold text-foreground">$${comparison.analysis.averageRecommendedCharge}</div>
+                        </div>
+                        <div class="bg-accent/30 rounded-lg p-4">
+                            <div class="text-sm text-muted-foreground mb-1">Highest Charge</div>
+                            <div class="text-2xl font-bold text-primary">$${comparison.analysis.highestRecommendedCharge}</div>
+                            <div class="text-xs text-muted-foreground mt-1">${sorted[sorted.length-1].location}</div>
+                        </div>
+                    </div>
+
+                    <!-- Key Differences -->
+                    ${differences.length > 0 ? `
+                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-foreground mb-3 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                Key Differences to Note
+                            </h4>
+                            <div class="space-y-2">
+                                ${differences.map(diff => `
+                                    <div class="flex items-start gap-2">
+                                        <svg class="w-4 h-4 mt-0.5 flex-shrink-0 ${
+                                            diff.severity === 'high' ? 'text-red-500' :
+                                            diff.severity === 'medium' ? 'text-amber-500' :
+                                            'text-blue-500'
+                                        }" fill="currentColor" viewBox="0 0 20 20">
+                                            <circle cx="10" cy="10" r="8"/>
+                                        </svg>
+                                        <div>
+                                            <p class="text-sm font-medium text-foreground">${diff.message}</p>
+                                            <p class="text-xs text-muted-foreground">${diff.details}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <!-- Comparison Table -->
+                    <div class="overflow-x-auto">
+                        <h4 class="font-semibold text-foreground mb-4">Side-by-Side Comparison</h4>
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr class="border-b-2 border-border">
+                                    <th class="text-left py-3 px-4 text-sm font-semibold text-foreground">Jurisdiction</th>
+                                    <th class="text-right py-3 px-4 text-sm font-semibold text-foreground">Permit Fee</th>
+                                    <th class="text-right py-3 px-4 text-sm font-semibold text-foreground">Your Charge</th>
+                                    <th class="text-right py-3 px-4 text-sm font-semibold text-foreground">Your Profit</th>
+                                    <th class="text-right py-3 px-4 text-sm font-semibold text-foreground">Margin</th>
+                                    <th class="text-center py-3 px-4 text-sm font-semibold text-foreground">Processing</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${sorted.map((comp, index) => {
+                                    const isLowest = index === 0;
+                                    const isHighest = index === sorted.length - 1;
+                                    return `
+                                        <tr class="border-b border-border hover:bg-accent/20 ${
+                                            isLowest ? 'bg-success/10' :
+                                            isHighest ? 'bg-primary/10' : ''
+                                        }">
+                                            <td class="py-3 px-4">
+                                                <div class="font-medium text-foreground">${comp.location}</div>
+                                                ${isLowest ? '<div class="text-xs text-success font-medium">⬇ Lowest</div>' : ''}
+                                                ${isHighest ? '<div class="text-xs text-primary font-medium">⬆ Highest</div>' : ''}
+                                            </td>
+                                            <td class="text-right py-3 px-4 text-muted-foreground">$${comp.pricing.permitFee}</td>
+                                            <td class="text-right py-3 px-4 font-semibold text-foreground">$${comp.pricing.recommendedCharge}</td>
+                                            <td class="text-right py-3 px-4 text-success">$${comp.pricing.profit}</td>
+                                            <td class="text-right py-3 px-4 text-muted-foreground">${comp.pricing.profitMargin}%</td>
+                                            <td class="text-center py-3 px-4 text-xs text-muted-foreground">${comp.pricing.processingTime}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Variance Summary -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-foreground mb-2">💡 Pricing Strategy Insight</h4>
+                        <p class="text-sm text-muted-foreground">
+                            The variance of <strong>$${comparison.analysis.variance}</strong> between jurisdictions means you could be
+                            ${comparison.analysis.variance > 100 ? 'significantly undercharging' : 'pricing competitively'}
+                            in some markets. Consider adjusting your rates based on local permit fees and processing complexity.
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            resultsContainer.innerHTML = html;
+            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>
