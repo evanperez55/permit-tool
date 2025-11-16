@@ -3,7 +3,7 @@
  * Calculates comprehensive permit pricing for contractors
  */
 
-const { permitFees, laborTimes, markupRecommendations } = require('./permit-fee-database');
+const { permitFees, laborTimes, markupRecommendations, dataQuality, detectRegion } = require('./database-loader');
 
 /**
  * Map job types to database keys
@@ -52,8 +52,9 @@ function getPermitFeeCategory(jobType) {
  * Calculate permit fee based on jurisdiction and job details
  */
 function calculatePermitFee(location, jobType, projectValue = 5000) {
-    // Get jurisdiction data or default
-    const jurisdictionData = permitFees[location] || permitFees['default'];
+    // Use intelligent region detection for better estimates
+    const resolvedLocation = detectRegion(location);
+    const jurisdictionData = permitFees[resolvedLocation];
 
     // Get permit category
     const feeCategory = getPermitFeeCategory(jobType);
@@ -151,6 +152,10 @@ function calculateClientCharge(permitFee, laborCost, jobType) {
 function calculateFullPricing(location, jobType, projectValue = 5000) {
     const normalizedType = normalizeJobType(jobType);
 
+    // Determine if we have verified data for this location
+    const qualityInfo = dataQuality[location] || dataQuality['default'];
+    const isEstimated = qualityInfo.quality === 'estimated';
+
     // Calculate each component
     const permitFeeData = calculatePermitFee(location, normalizedType, projectValue);
     const laborData = calculateLaborCosts(normalizedType);
@@ -164,6 +169,17 @@ function calculateFullPricing(location, jobType, projectValue = 5000) {
         jurisdiction: location,
         jobType: normalizedType,
         projectValue: projectValue,
+
+        // Data quality information
+        dataQuality: {
+            quality: qualityInfo.quality,
+            source: qualityInfo.source,
+            lastVerified: qualityInfo.lastVerified,
+            url: qualityInfo.url,
+            confidence: qualityInfo.confidence,
+            isEstimated: isEstimated,
+            notes: qualityInfo.notes
+        },
 
         // Permit fees
         permitFee: permitFeeData,

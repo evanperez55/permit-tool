@@ -3,7 +3,7 @@
  * Allows contractors to compare permit requirements across multiple cities
  */
 
-const { permitFees, laborTimes, markupRecommendations } = require('./permit-fee-database');
+const { permitFees, laborTimes, markupRecommendations } = require('./database-loader');
 const { calculateFullPricing } = require('./pricing-calculator');
 
 /**

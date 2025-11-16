@@ -152,6 +152,7 @@ Please provide specific permit requirements for this job in ${city}, ${state}.
         const clientTemplates = generateAllClientTemplates(fullPricingData);
 
         console.log(`💰 Pricing calculated: $${pricingData.summary.recommendedCharge} recommended charge`);
+        console.log(`📊 Data quality: ${pricingData.dataQuality.quality} (confidence: ${pricingData.dataQuality.confidence})`);
         console.log(`📧 Client templates generated: 5 templates ready`);
 
         res.json({
@@ -195,6 +196,37 @@ app.get('/api/jurisdictions', (req, res) => {
         console.error('❌ Error getting jurisdictions:', error.message);
         res.status(500).json({
             error: 'Failed to retrieve jurisdictions',
+            message: error.message
+        });
+    }
+});
+
+// Get only verified cities (for limiting user selection)
+app.get('/api/verified-cities', (req, res) => {
+    try {
+        const { dataQuality } = require('./database-loader');
+
+        const verifiedCities = Object.entries(dataQuality)
+            .filter(([city, quality]) => quality.quality === 'verified')
+            .map(([city, quality]) => ({
+                name: city,
+                source: quality.source,
+                lastVerified: quality.lastVerified,
+                url: quality.url
+            }));
+
+        console.log(`✅ Retrieved ${verifiedCities.length} verified cities`);
+
+        res.json({
+            success: true,
+            cities: verifiedCities,
+            count: verifiedCities.length,
+            message: `We currently have verified permit data for ${verifiedCities.length} major US cities.`
+        });
+    } catch (error) {
+        console.error('❌ Error getting verified cities:', error.message);
+        res.status(500).json({
+            error: 'Failed to retrieve verified cities',
             message: error.message
         });
     }
