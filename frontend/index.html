@@ -226,10 +226,149 @@
             box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.1);
         }
 
+        /* Autocomplete styles */
+        .autocomplete-wrapper {
+            position: relative;
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 40;
+            background: white;
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-top: none;
+            border-radius: 0 0 0.5rem 0.5rem;
+            box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.12);
+            max-height: 280px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .autocomplete-dropdown.visible {
+            display: block;
+        }
+
+        .autocomplete-option {
+            padding: 0.625rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.15s;
+        }
+
+        .autocomplete-option:hover,
+        .autocomplete-option.highlighted {
+            background: hsl(210 40% 96.1%);
+        }
+
+        .autocomplete-option .city-name {
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: hsl(222.2 84% 4.9%);
+        }
+
+        .autocomplete-option .city-badge {
+            font-size: 0.625rem;
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            font-weight: 500;
+        }
+
+        .autocomplete-option .badge-verified {
+            background: hsl(142.1 76.2% 36.3% / 0.1);
+            color: hsl(142.1 76.2% 36.3%);
+        }
+
+        .autocomplete-option .badge-estimate {
+            background: hsl(38 92% 50% / 0.1);
+            color: hsl(38 92% 30%);
+        }
+
+        .autocomplete-section-label {
+            padding: 0.5rem 1rem 0.25rem;
+            font-size: 0.625rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: hsl(215.4 16.3% 46.9%);
+        }
+
+        /* Saved projects drawer */
+        .saved-projects-bar {
+            transition: all 0.3s ease;
+        }
+
+        .saved-project-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: white;
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .saved-project-chip:hover {
+            border-color: hsl(222.2 47.4% 11.2%);
+            box-shadow: 0 2px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .saved-project-chip .delete-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: hsl(0 84.2% 60.2% / 0.1);
+            color: hsl(0 84.2% 60.2%);
+            font-size: 10px;
+            line-height: 1;
+            transition: background 0.15s;
+        }
+
+        .saved-project-chip .delete-btn:hover {
+            background: hsl(0 84.2% 60.2% / 0.25);
+        }
+
+        /* Mobile responsive overrides */
+        @media (max-width: 640px) {
+            .container { padding-left: 1rem; padding-right: 1rem; }
+            header h1 { font-size: 1.75rem; }
+            header p { font-size: 1rem; }
+            .badge { font-size: 0.625rem; padding: 0.2rem 0.5rem; }
+            .pricing-grid { grid-template-columns: 1fr 1fr; }
+            .pricing-item { padding: 0.75rem; }
+            #recommendedCharge { font-size: 2.5rem; }
+            .results-content h2 { font-size: 1.1rem; }
+            /* Stack action buttons */
+            #results > .flex.flex-wrap { flex-direction: column; }
+            #results > .flex.flex-wrap > button { min-width: 100%; }
+            /* Comparison table scroll */
+            table { font-size: 0.8rem; }
+            table th, table td { padding: 0.5rem; }
+            /* Modal full-screen on mobile */
+            #templateModal > div { max-width: 100%; max-height: 100vh; border-radius: 0; }
+        }
+
+        @media (max-width: 480px) {
+            .pricing-grid { grid-template-columns: 1fr; }
+            .grid.grid-cols-2 { grid-template-columns: 1fr; }
+        }
+
         /* Print / PDF export styles */
         @media print {
             body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            #formCard, #comparisonCard, #loading, #templateModal, .btn-primary, button { display: none !important; }
+            #formCard, #comparisonCard, #loading, #templateModal, #savedProjectsBar, .btn-primary, button { display: none !important; }
             #results { display: block !important; }
             #results > div { break-inside: avoid; border: 1px solid #ddd !important; margin-bottom: 1rem; }
             .animate-fade-in, .animate-slide-in { animation: none !important; }
@@ -284,6 +423,22 @@
             </div>
         </header>
 
+        <!-- Saved Projects Bar -->
+        <div id="savedProjectsBar" class="hidden saved-projects-bar mb-4 animate-fade-in">
+            <div class="bg-white border border-border rounded-lg shadow-sm px-4 py-3">
+                <div class="flex items-center gap-3 mb-2">
+                    <svg class="w-4 h-4 text-muted-foreground flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                    </svg>
+                    <span class="text-sm font-medium text-foreground">Saved Lookups</span>
+                    <button onclick="clearAllSavedProjects()" class="ml-auto text-xs text-muted-foreground hover:text-destructive transition-colors">Clear all</button>
+                </div>
+                <div id="savedProjectsList" class="flex flex-wrap gap-2 overflow-x-auto">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
         <!-- Main Form Card -->
         <div id="formCard" class="bg-white border border-border rounded-lg shadow-sm p-6 md:p-8 mb-6 animate-fade-in card-hover">
             <form id="permitForm" class="space-y-6">
@@ -308,17 +463,23 @@
                     </div>
 
                     <div>
-                        <label for="citySelect" class="block text-sm font-medium text-foreground mb-2">
-                            Select City <span class="text-destructive">*</span>
+                        <label for="cityInput" class="block text-sm font-medium text-foreground mb-2">
+                            City <span class="text-destructive">*</span>
                         </label>
-                        <select id="citySelect" required class="form-input w-full px-4 py-2.5 border border-input rounded-md bg-background text-foreground text-base focus:outline-none focus:ring-2 focus:ring-ring">
-                            <option value="">Loading verified cities...</option>
-                        </select>
+                        <div class="autocomplete-wrapper">
+                            <div class="relative">
+                                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <input type="text" id="cityInput" required autocomplete="off" placeholder="Type a city name..." class="form-input w-full pl-10 pr-4 py-2.5 border border-input rounded-md bg-background text-foreground text-base focus:outline-none focus:ring-2 focus:ring-ring" />
+                            </div>
+                            <div id="cityDropdown" class="autocomplete-dropdown"></div>
+                        </div>
                         <p class="text-xs text-muted-foreground mt-2 flex items-start gap-1">
                             <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                             </svg>
-                            <span>We have verified permit data for <strong id="cityCount">10</strong> major US cities. Don't see your city? <button type="button" onclick="alert('City request feature coming soon! For now, please email requests to support@permitassistant.com')" class="text-primary hover:underline font-medium">Request it here</button></span>
+                            <span>Verified data for <strong id="cityCount">10</strong> cities. Other cities use regional estimates.</span>
                         </p>
                     </div>
                     <!-- Hidden inputs to maintain compatibility with existing form handler -->
@@ -635,6 +796,12 @@
 
             <!-- Action Buttons -->
             <div class="flex flex-wrap gap-3">
+                <button onclick="saveCurrentProject()" id="saveProjectBtn" class="flex-1 min-w-[140px] bg-primary text-primary-foreground px-4 py-2.5 rounded-md font-medium text-sm hover:bg-primary/90 transition-colors">
+                    <svg class="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                    </svg>
+                    Save Lookup
+                </button>
                 <button onclick="printReport()" class="flex-1 min-w-[140px] bg-secondary text-secondary-foreground px-4 py-2.5 rounded-md font-medium text-sm hover:bg-secondary/80 transition-colors" title="Use 'Save as PDF' in the print dialog to download">
                     <svg class="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -698,11 +865,26 @@
         let currentData = null;
         let currentTemplate = null;
         let verifiedCities = [];
+        let highlightedIndex = -1;
 
         const form = document.getElementById('permitForm');
         const formCard = document.getElementById('formCard');
         const loading = document.getElementById('loading');
         const results = document.getElementById('results');
+
+        // US states for autocomplete fallback
+        const US_STATES = {
+            'AL':'Alabama','AK':'Alaska','AZ':'Arizona','AR':'Arkansas','CA':'California',
+            'CO':'Colorado','CT':'Connecticut','DE':'Delaware','FL':'Florida','GA':'Georgia',
+            'HI':'Hawaii','ID':'Idaho','IL':'Illinois','IN':'Indiana','IA':'Iowa',
+            'KS':'Kansas','KY':'Kentucky','LA':'Louisiana','ME':'Maine','MD':'Maryland',
+            'MA':'Massachusetts','MI':'Michigan','MN':'Minnesota','MS':'Mississippi','MO':'Missouri',
+            'MT':'Montana','NE':'Nebraska','NV':'Nevada','NH':'New Hampshire','NJ':'New Jersey',
+            'NM':'New Mexico','NY':'New York','NC':'North Carolina','ND':'North Dakota','OH':'Ohio',
+            'OK':'Oklahoma','OR':'Oregon','PA':'Pennsylvania','RI':'Rhode Island','SC':'South Carolina',
+            'SD':'South Dakota','TN':'Tennessee','TX':'Texas','UT':'Utah','VT':'Vermont',
+            'VA':'Virginia','WA':'Washington','WV':'West Virginia','WI':'Wisconsin','WY':'Wyoming'
+        };
 
         // Load verified cities on page load
         async function loadVerifiedCities() {
@@ -712,36 +894,172 @@
 
                 if (data.success) {
                     verifiedCities = data.cities;
-                    const citySelect = document.getElementById('citySelect');
-                    const cityCount = document.getElementById('cityCount');
-
-                    citySelect.innerHTML = '<option value="">Select a city...</option>' +
-                        verifiedCities.map(city =>
-                            `<option value="${city.name}">${city.name}</option>`
-                        ).join('');
-
-                    cityCount.textContent = data.count;
-
-                    // Update hidden inputs when city is selected
-                    citySelect.addEventListener('change', (e) => {
-                        const fullCity = e.target.value;
-                        if (fullCity) {
-                            // Split "City, ST" into city and state
-                            const parts = fullCity.split(', ');
-                            document.getElementById('city').value = parts[0];
-                            document.getElementById('state').value = parts[1] || '';
-                        }
-                    });
+                    document.getElementById('cityCount').textContent = data.count;
                 }
             } catch (error) {
                 console.error('Failed to load verified cities:', error);
-                const citySelect = document.getElementById('citySelect');
-                citySelect.innerHTML = '<option value="">Error loading cities</option>';
             }
+        }
+
+        // ============================================
+        // AUTOCOMPLETE
+        // ============================================
+
+        const cityInput = document.getElementById('cityInput');
+        const cityDropdown = document.getElementById('cityDropdown');
+
+        function setCityFromSelection(cityName) {
+            cityInput.value = cityName;
+            const parts = cityName.split(', ');
+            document.getElementById('city').value = parts[0];
+            document.getElementById('state').value = parts[1] || '';
+            cityDropdown.classList.remove('visible');
+            highlightedIndex = -1;
+        }
+
+        function renderAutocomplete(query) {
+            const q = query.trim().toLowerCase();
+            if (q.length === 0) {
+                cityDropdown.classList.remove('visible');
+                return;
+            }
+
+            let html = '';
+            const matchedVerified = verifiedCities.filter(c =>
+                c.name.toLowerCase().includes(q)
+            );
+
+            if (matchedVerified.length > 0) {
+                html += '<div class="autocomplete-section-label">Verified Cities</div>';
+                matchedVerified.forEach((city, i) => {
+                    html += `<div class="autocomplete-option" data-value="${city.name}" data-index="${i}">
+                        <span class="city-name">${highlightMatch(city.name, q)}</span>
+                        <span class="city-badge badge-verified">Verified</span>
+                    </div>`;
+                });
+            }
+
+            // Generate suggestions from state abbreviations
+            const stateMatches = [];
+            for (const [abbr, name] of Object.entries(US_STATES)) {
+                if (name.toLowerCase().includes(q) || abbr.toLowerCase().includes(q)) {
+                    // Check if we already have this state in verified
+                    const alreadyListed = matchedVerified.some(c => c.name.endsWith(`, ${abbr}`));
+                    if (!alreadyListed) {
+                        stateMatches.push({ abbr, name });
+                    }
+                }
+            }
+
+            // If query looks like "City, ST" parse it
+            const commaMatch = q.match(/^(.+),\s*([a-z]{0,2})$/i);
+            if (commaMatch) {
+                const typedCity = commaMatch[1].trim();
+                const typedState = commaMatch[2].trim().toUpperCase();
+                if (typedState && US_STATES[typedState]) {
+                    const suggestion = `${typedCity.charAt(0).toUpperCase() + typedCity.slice(1)}, ${typedState}`;
+                    const alreadyExists = matchedVerified.some(c => c.name.toLowerCase() === suggestion.toLowerCase());
+                    if (!alreadyExists) {
+                        html += '<div class="autocomplete-section-label">Use Regional Estimate</div>';
+                        html += `<div class="autocomplete-option" data-value="${suggestion}" data-index="${matchedVerified.length}">
+                            <span class="city-name">${suggestion}</span>
+                            <span class="city-badge badge-estimate">Estimate</span>
+                        </div>`;
+                    }
+                }
+            }
+
+            if (html === '') {
+                html = '<div class="autocomplete-section-label">Type "City, ST" (e.g. Denver, CO)</div>';
+            }
+
+            cityDropdown.innerHTML = html;
+            cityDropdown.classList.add('visible');
+            highlightedIndex = -1;
+
+            // Attach click handlers
+            cityDropdown.querySelectorAll('.autocomplete-option').forEach(opt => {
+                opt.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    setCityFromSelection(opt.dataset.value);
+                });
+            });
+        }
+
+        function highlightMatch(text, query) {
+            const idx = text.toLowerCase().indexOf(query);
+            if (idx === -1) return text;
+            return text.slice(0, idx) + '<strong>' + text.slice(idx, idx + query.length) + '</strong>' + text.slice(idx + query.length);
+        }
+
+        cityInput.addEventListener('input', () => renderAutocomplete(cityInput.value));
+
+        cityInput.addEventListener('focus', () => {
+            if (cityInput.value.trim().length > 0) {
+                renderAutocomplete(cityInput.value);
+            } else if (verifiedCities.length > 0) {
+                // Show all verified cities when focusing empty input
+                let html = '<div class="autocomplete-section-label">Verified Cities</div>';
+                verifiedCities.forEach((city, i) => {
+                    html += `<div class="autocomplete-option" data-value="${city.name}" data-index="${i}">
+                        <span class="city-name">${city.name}</span>
+                        <span class="city-badge badge-verified">Verified</span>
+                    </div>`;
+                });
+                cityDropdown.innerHTML = html;
+                cityDropdown.classList.add('visible');
+                cityDropdown.querySelectorAll('.autocomplete-option').forEach(opt => {
+                    opt.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        setCityFromSelection(opt.dataset.value);
+                    });
+                });
+            }
+        });
+
+        cityInput.addEventListener('blur', () => {
+            setTimeout(() => {
+                cityDropdown.classList.remove('visible');
+                // Auto-parse city/state from typed value
+                const val = cityInput.value.trim();
+                if (val && val.includes(',')) {
+                    const parts = val.split(',').map(s => s.trim());
+                    document.getElementById('city').value = parts[0];
+                    document.getElementById('state').value = parts[1] || '';
+                }
+            }, 150);
+        });
+
+        cityInput.addEventListener('keydown', (e) => {
+            const options = cityDropdown.querySelectorAll('.autocomplete-option');
+            if (!cityDropdown.classList.contains('visible') || options.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                highlightedIndex = Math.min(highlightedIndex + 1, options.length - 1);
+                updateHighlight(options);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                highlightedIndex = Math.max(highlightedIndex - 1, 0);
+                updateHighlight(options);
+            } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+                e.preventDefault();
+                setCityFromSelection(options[highlightedIndex].dataset.value);
+            } else if (e.key === 'Escape') {
+                cityDropdown.classList.remove('visible');
+            }
+        });
+
+        function updateHighlight(options) {
+            options.forEach((opt, i) => {
+                opt.classList.toggle('highlighted', i === highlightedIndex);
+                if (i === highlightedIndex) opt.scrollIntoView({ block: 'nearest' });
+            });
         }
 
         // Load cities when page loads
         loadVerifiedCities();
+        loadSavedProjects();
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1309,6 +1627,132 @@
                     alert('✓ Pricing copied to clipboard!');
                 });
             }
+        }
+
+        // ============================================
+        // SAVE / LOAD PROJECTS
+        // ============================================
+
+        const SAVED_PROJECTS_KEY = 'permit-assistant-saved-projects';
+
+        function getSavedProjects() {
+            try {
+                return JSON.parse(localStorage.getItem(SAVED_PROJECTS_KEY) || '[]');
+            } catch { return []; }
+        }
+
+        function saveCurrentProject() {
+            if (!currentData) return;
+            const projects = getSavedProjects();
+            const project = {
+                id: Date.now(),
+                jobType: currentData.metadata.jobType,
+                location: currentData.metadata.location,
+                projectType: currentData.metadata.projectType,
+                scope: currentData.metadata.scope,
+                projectValue: currentData.metadata.projectValue,
+                recommendedCharge: currentData.pricing.summary.recommendedCharge,
+                savedAt: new Date().toISOString()
+            };
+
+            // Avoid exact duplicates
+            const isDup = projects.some(p =>
+                p.jobType === project.jobType &&
+                p.location === project.location &&
+                p.projectValue === project.projectValue
+            );
+            if (isDup) {
+                const btn = document.getElementById('saveProjectBtn');
+                btn.textContent = 'Already saved';
+                setTimeout(() => {
+                    btn.innerHTML = '<svg class="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>Save Lookup';
+                }, 1500);
+                return;
+            }
+
+            projects.unshift(project);
+            // Keep max 20
+            if (projects.length > 20) projects.length = 20;
+            localStorage.setItem(SAVED_PROJECTS_KEY, JSON.stringify(projects));
+
+            const btn = document.getElementById('saveProjectBtn');
+            btn.innerHTML = '<svg class="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>Saved!';
+            setTimeout(() => {
+                btn.innerHTML = '<svg class="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>Save Lookup';
+            }, 1500);
+
+            loadSavedProjects();
+        }
+
+        function loadSavedProjects() {
+            const projects = getSavedProjects();
+            const bar = document.getElementById('savedProjectsBar');
+            const list = document.getElementById('savedProjectsList');
+
+            if (projects.length === 0) {
+                bar.classList.add('hidden');
+                return;
+            }
+
+            bar.classList.remove('hidden');
+            list.innerHTML = projects.map(p => {
+                const parts = p.location.split(', ');
+                const dateStr = new Date(p.savedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                return `<span class="saved-project-chip" onclick="loadProject(${p.id})" title="$${p.recommendedCharge} | ${dateStr}">
+                    ${p.jobType} - ${parts[0]}, ${parts[1]}
+                    <span class="delete-btn" onclick="event.stopPropagation(); deleteProject(${p.id})">&times;</span>
+                </span>`;
+            }).join('');
+        }
+
+        function loadProject(id) {
+            const projects = getSavedProjects();
+            const project = projects.find(p => p.id === id);
+            if (!project) return;
+
+            const parts = project.location.split(', ');
+            document.getElementById('cityInput').value = project.location;
+            document.getElementById('city').value = parts[0];
+            document.getElementById('state').value = parts[1] || '';
+            document.getElementById('jobType').value = getJobTypeSelectValue(project.jobType);
+            document.getElementById('projectType').value = project.projectType || 'Residential';
+            document.getElementById('scope').value = project.scope || 'New Installation';
+            document.getElementById('projectValue').value = project.projectValue || 5000;
+
+            // Show form and scroll to it
+            formCard.classList.remove('hidden');
+            results.classList.add('hidden');
+            window.scrollTo({ top: formCard.offsetTop - 20, behavior: 'smooth' });
+
+            // Auto-submit
+            form.dispatchEvent(new Event('submit'));
+        }
+
+        function getJobTypeSelectValue(normalizedType) {
+            const map = {
+                'Electrical': 'Electrical Work',
+                'Plumbing': 'Plumbing',
+                'HVAC': 'HVAC',
+                'Roofing': 'Roofing',
+                'General Construction': 'General Construction',
+                'Remodeling': 'Remodeling/Renovation',
+                'Solar': 'Solar Installation',
+                'Pool': 'Pool/Spa',
+                'Fence': 'Fence/Deck',
+                'Demolition': 'Demolition'
+            };
+            return map[normalizedType] || normalizedType;
+        }
+
+        function deleteProject(id) {
+            const projects = getSavedProjects().filter(p => p.id !== id);
+            localStorage.setItem(SAVED_PROJECTS_KEY, JSON.stringify(projects));
+            loadSavedProjects();
+        }
+
+        function clearAllSavedProjects() {
+            localStorage.removeItem(SAVED_PROJECTS_KEY);
+            loadSavedProjects();
         }
 
         // ============================================
