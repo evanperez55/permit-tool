@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Permit Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" },
+                        secondary: { DEFAULT: "hsl(var(--secondary))", foreground: "hsl(var(--secondary-foreground))" },
+                        muted: { DEFAULT: "hsl(var(--muted))", foreground: "hsl(var(--muted-foreground))" },
+                        accent: { DEFAULT: "hsl(var(--accent))", foreground: "hsl(var(--accent-foreground))" },
+                        destructive: { DEFAULT: "hsl(0 84.2% 60.2%)", foreground: "hsl(210 40% 98%)" },
+                        success: { DEFAULT: "hsl(142.1 76.2% 36.3%)", foreground: "hsl(355.7 100% 97.3%)" }
+                    },
+                    borderRadius: { lg: "0.5rem", md: "calc(0.5rem - 2px)", sm: "calc(0.5rem - 4px)" }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        :root {
+            --border: 214.3 31.8% 91.4%; --input: 214.3 31.8% 91.4%; --ring: 222.2 84% 4.9%;
+            --background: 0 0% 100%; --foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%; --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%; --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%; --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%; --accent-foreground: 222.2 47.4% 11.2%;
+            --card: 0 0% 100%; --card-foreground: 222.2 84% 4.9%;
+        }
+        .dark {
+            --border: 217.2 32.6% 17.5%; --input: 217.2 32.6% 17.5%; --ring: 212.7 26.8% 83.9%;
+            --background: 222.2 84% 4.9%; --foreground: 210 40% 98%;
+            --primary: 210 40% 98%; --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%; --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%; --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%; --accent-foreground: 210 40% 98%;
+            --card: 222.2 84% 4.9%; --card-foreground: 210 40% 98%;
+        }
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { background: linear-gradient(to bottom right, hsl(var(--secondary)), hsl(var(--border))); min-height: 100vh; color: hsl(var(--foreground)); transition: background-color 0.3s, color 0.3s; }
+        .tab-btn { padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500; border-radius: 0.5rem 0.5rem 0 0; border: 1px solid transparent; cursor: pointer; transition: all 0.2s; color: hsl(var(--muted-foreground)); background: transparent; }
+        .tab-btn:hover { color: hsl(var(--foreground)); }
+        .tab-btn.active { background: hsl(var(--card)); border-color: hsl(var(--border)); border-bottom-color: hsl(var(--card)); color: hsl(var(--foreground)); font-weight: 600; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .status-dot.green { background: hsl(142.1 76.2% 36.3%); }
+        .status-dot.yellow { background: hsl(38 92% 50%); }
+        .status-dot.red { background: hsl(0 84.2% 60.2%); }
+        .theme-toggle { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50; width: 44px; height: 44px; border-radius: 50%; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); box-shadow: 0 2px 10px -2px rgba(0,0,0,0.15); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: hsl(var(--foreground)); }
+        .dark .bg-white { background: hsl(var(--card)) !important; }
+        .spinner { border: 3px solid hsl(var(--muted)); border-top-color: hsl(var(--primary)); border-radius: 50%; width: 20px; height: 20px; animation: spin 0.8s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <header class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-foreground">Admin Dashboard</h1>
+                    <p class="text-muted-foreground mt-1">
+                        <a href="/" class="hover:text-primary transition-colors">Permit Assistant</a> &mdash; System monitoring and management
+                    </p>
+                </div>
+                <a href="/" class="text-sm text-muted-foreground hover:text-primary transition-colors border border-border rounded-md px-3 py-1.5">
+                    &larr; Back to App
+                </a>
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <div class="flex border-b border-border mb-0">
+            <button class="tab-btn active" onclick="switchTab('scraper-health')">Scraper Health</button>
+            <button class="tab-btn" onclick="switchTab('link-checker')">Link Checker</button>
+            <button class="tab-btn" onclick="switchTab('paperwork')">Paperwork Stats</button>
+            <button class="tab-btn" onclick="switchTab('analytics')">Analytics</button>
+        </div>
+
+        <!-- Tab Contents -->
+        <div class="bg-white border border-border border-t-0 rounded-b-lg shadow-sm p-6">
+
+            <!-- Tab 1: Scraper Health -->
+            <div id="tab-scraper-health" class="tab-content active">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-foreground">Scraper Health</h2>
+                    <div id="schedulerControls" class="flex items-center gap-3">
+                        <span id="schedulerStatus" class="text-sm text-muted-foreground"></span>
+                        <button onclick="startScheduler()" class="text-sm bg-success text-white px-3 py-1 rounded-md hover:opacity-90 transition-opacity">Start</button>
+                        <button onclick="stopScheduler()" class="text-sm bg-destructive text-white px-3 py-1 rounded-md hover:opacity-90 transition-opacity">Stop</button>
+                    </div>
+                </div>
+                <div id="scraperGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                    <div class="text-center py-8 text-muted-foreground col-span-full"><div class="spinner mx-auto mb-2"></div>Loading scraper health...</div>
+                </div>
+                <h3 class="text-lg font-semibold text-foreground mb-4">Run History</h3>
+                <div id="runHistory" class="overflow-x-auto">
+                    <div class="text-center py-4 text-muted-foreground"><div class="spinner mx-auto mb-2"></div>Loading...</div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Link Checker -->
+            <div id="tab-link-checker" class="tab-content">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-foreground">Link Health Check</h2>
+                    <button onclick="runFullLinkCheck()" id="linkCheckBtn" class="text-sm bg-primary text-primary-foreground px-4 py-2 rounded-md hover:opacity-90 transition-opacity">
+                        Run Full Check
+                    </button>
+                </div>
+                <div id="linkSummary" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="text-center py-8 text-muted-foreground col-span-full"><div class="spinner mx-auto mb-2"></div>Loading link check...</div>
+                </div>
+                <div id="linkResults" class="overflow-x-auto"></div>
+            </div>
+
+            <!-- Tab 3: Paperwork Stats (added in commit 6) -->
+            <div id="tab-paperwork" class="tab-content">
+                <div class="text-center py-12 text-muted-foreground">Loading...</div>
+            </div>
+
+            <!-- Tab 4: Analytics (added in commit 6) -->
+            <div id="tab-analytics" class="tab-content">
+                <div class="text-center py-12 text-muted-foreground">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dark Mode Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode" aria-label="Toggle dark mode">
+        <svg id="sunIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <svg id="moonIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+    </button>
+
+    <script>
+        const API_BASE = window.PERMIT_API_URL || 'http://localhost:5001';
+
+        // ============================================
+        // DARK MODE
+        // ============================================
+        function getThemePreference() {
+            const stored = localStorage.getItem('permit-assistant-theme');
+            if (stored) return stored;
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        function applyTheme(theme) {
+            document.documentElement.classList.toggle('dark', theme === 'dark');
+            document.getElementById('sunIcon').classList.toggle('hidden', theme === 'light');
+            document.getElementById('moonIcon').classList.toggle('hidden', theme === 'dark');
+        }
+        function toggleTheme() {
+            const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            const next = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('permit-assistant-theme', next);
+            applyTheme(next);
+        }
+        applyTheme(getThemePreference());
+
+        // ============================================
+        // TAB SWITCHING
+        // ============================================
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+                const tabs = ['scraper-health', 'link-checker', 'paperwork', 'analytics'];
+                btn.classList.toggle('active', tabs[i] === tabId);
+            });
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+
+            // Lazy load tab data
+            if (tabId === 'link-checker' && !linkDataLoaded) loadLinkCheck();
+            if (tabId === 'paperwork' && !paperworkDataLoaded) loadPaperworkStats();
+            if (tabId === 'analytics' && !analyticsDataLoaded) loadAnalytics();
+        }
+
+        // ============================================
+        // SCRAPER HEALTH
+        // ============================================
+        async function loadScraperHealth() {
+            try {
+                const [healthRes, runsRes, schedRes] = await Promise.all([
+                    fetch(API_BASE + '/api/admin/scraper-health'),
+                    fetch(API_BASE + '/api/admin/scraper-runs'),
+                    fetch(API_BASE + '/api/admin/scheduler')
+                ]);
+                const health = await healthRes.json();
+                const runs = await runsRes.json();
+                const sched = await schedRes.json();
+
+                displayScraperGrid(health);
+                displayRunHistory(runs);
+                displaySchedulerStatus(sched);
+            } catch (error) {
+                document.getElementById('scraperGrid').innerHTML = `<div class="col-span-full text-center text-destructive py-4">Failed to load: ${error.message}</div>`;
+            }
+        }
+
+        function displayScraperGrid(health) {
+            const cities = health.cities || [];
+            if (cities.length === 0) {
+                document.getElementById('scraperGrid').innerHTML = '<div class="col-span-full text-center text-muted-foreground py-4">No scraper data available</div>';
+                return;
+            }
+            document.getElementById('scraperGrid').innerHTML = cities.map(city => {
+                const statusColor = city.status === 'healthy' ? 'green' : city.status === 'stale' ? 'yellow' : 'red';
+                const trades = city.tradesScraped || [];
+                return `
+                    <div class="border border-border rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="status-dot ${statusColor}"></span>
+                                <span class="font-semibold text-foreground text-sm">${city.city}</span>
+                            </div>
+                            <button onclick="runScrape('${city.city}')" class="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded hover:bg-secondary/80 transition-colors">Run Scrape</button>
+                        </div>
+                        <div class="text-xs text-muted-foreground space-y-1">
+                            <p>Last run: ${city.lastRun ? new Date(city.lastRun).toLocaleDateString() : 'Never'}</p>
+                            <p>Trades: ${trades.length > 0 ? trades.join(', ') : 'None'}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function displayRunHistory(data) {
+            const runs = data.runs || [];
+            if (runs.length === 0) {
+                document.getElementById('runHistory').innerHTML = '<p class="text-muted-foreground text-sm">No run history available</p>';
+                return;
+            }
+            document.getElementById('runHistory').innerHTML = `
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-border text-left">
+                            <th class="pb-2 font-medium text-muted-foreground">City</th>
+                            <th class="pb-2 font-medium text-muted-foreground">Date</th>
+                            <th class="pb-2 font-medium text-muted-foreground">Status</th>
+                            <th class="pb-2 font-medium text-muted-foreground">Trades</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${runs.slice(0, 20).map(run => `
+                            <tr class="border-b border-border/50">
+                                <td class="py-2 text-foreground">${run.city || 'Unknown'}</td>
+                                <td class="py-2 text-muted-foreground">${run.timestamp ? new Date(run.timestamp).toLocaleString() : '-'}</td>
+                                <td class="py-2"><span class="status-dot ${run.success ? 'green' : 'red'}"></span> ${run.success ? 'Success' : 'Failed'}</td>
+                                <td class="py-2 text-muted-foreground">${run.tradesUpdated || 0}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function displaySchedulerStatus(data) {
+            const isRunning = data.running || false;
+            document.getElementById('schedulerStatus').innerHTML = `
+                <span class="inline-flex items-center gap-1.5">
+                    <span class="status-dot ${isRunning ? 'green' : 'red'}"></span>
+                    ${isRunning ? 'Running' : 'Stopped'}
+                    ${data.nextRun ? ` &mdash; Next: ${new Date(data.nextRun).toLocaleString()}` : ''}
+                </span>
+            `;
+        }
+
+        async function startScheduler() {
+            try {
+                const res = await fetch(API_BASE + '/api/admin/scheduler/start', { method: 'POST' });
+                const data = await res.json();
+                displaySchedulerStatus(data);
+            } catch (e) { console.error('Failed to start scheduler:', e); }
+        }
+
+        async function stopScheduler() {
+            try {
+                const res = await fetch(API_BASE + '/api/admin/scheduler/stop', { method: 'POST' });
+                const data = await res.json();
+                displaySchedulerStatus(data);
+            } catch (e) { console.error('Failed to stop scheduler:', e); }
+        }
+
+        async function runScrape(city) {
+            try {
+                const res = await fetch(API_BASE + '/api/admin/scrape/' + encodeURIComponent(city), { method: 'POST' });
+                const data = await res.json();
+                alert(data.success ? `Scrape complete for ${city}` : `Scrape failed: ${data.message || 'Unknown error'}`);
+                loadScraperHealth();
+            } catch (e) {
+                alert('Scrape failed: ' + e.message);
+            }
+        }
+
+        // ============================================
+        // LINK CHECKER
+        // ============================================
+        let linkDataLoaded = false;
+
+        async function loadLinkCheck() {
+            try {
+                const res = await fetch(API_BASE + '/api/admin/link-check');
+                const data = await res.json();
+                linkDataLoaded = true;
+                displayLinkSummary(data);
+                displayLinkResults(data);
+            } catch (error) {
+                document.getElementById('linkSummary').innerHTML = `<div class="col-span-full text-center text-destructive py-4">Failed to load: ${error.message}</div>`;
+            }
+        }
+
+        function displayLinkSummary(data) {
+            const total = data.uniqueUrlsChecked || 0;
+            const healthy = data.healthy || 0;
+            const broken = data.broken || 0;
+            const redirects = data.redirects || 0;
+            document.getElementById('linkSummary').innerHTML = `
+                <div class="border border-border rounded-lg p-4 text-center">
+                    <p class="text-2xl font-bold text-foreground">${total}</p>
+                    <p class="text-xs text-muted-foreground">Total URLs</p>
+                </div>
+                <div class="border border-success/30 rounded-lg p-4 text-center bg-success/5">
+                    <p class="text-2xl font-bold text-success">${healthy}</p>
+                    <p class="text-xs text-muted-foreground">Healthy</p>
+                </div>
+                <div class="border border-destructive/30 rounded-lg p-4 text-center bg-destructive/5">
+                    <p class="text-2xl font-bold text-destructive">${broken}</p>
+                    <p class="text-xs text-muted-foreground">Broken</p>
+                </div>
+                <div class="border border-border rounded-lg p-4 text-center">
+                    <p class="text-2xl font-bold text-foreground">${redirects}</p>
+                    <p class="text-xs text-muted-foreground">Redirects</p>
+                </div>
+            `;
+        }
+
+        function displayLinkResults(data) {
+            const results = data.results || [];
+            if (results.length === 0) {
+                document.getElementById('linkResults').innerHTML = '<p class="text-sm text-muted-foreground">No results available</p>';
+                return;
+            }
+            document.getElementById('linkResults').innerHTML = `
+                <div class="mb-3 flex gap-2">
+                    <button onclick="filterLinks('all')" class="text-xs px-2 py-1 rounded border border-border hover:bg-accent transition-colors">All</button>
+                    <button onclick="filterLinks('healthy')" class="text-xs px-2 py-1 rounded border border-success/30 text-success hover:bg-success/10 transition-colors">Healthy</button>
+                    <button onclick="filterLinks('broken')" class="text-xs px-2 py-1 rounded border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors">Broken</button>
+                    <button onclick="filterLinks('redirect')" class="text-xs px-2 py-1 rounded border border-border hover:bg-accent transition-colors">Redirects</button>
+                </div>
+                <table class="w-full text-sm" id="linkTable">
+                    <thead>
+                        <tr class="border-b border-border text-left">
+                            <th class="pb-2 font-medium text-muted-foreground">Status</th>
+                            <th class="pb-2 font-medium text-muted-foreground">URL</th>
+                            <th class="pb-2 font-medium text-muted-foreground">Code</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${results.map(r => {
+                            const statusClass = r.status === 'healthy' ? 'green' : r.status === 'broken' ? 'red' : 'yellow';
+                            return `
+                                <tr class="border-b border-border/50 link-row" data-status="${r.status}">
+                                    <td class="py-2"><span class="status-dot ${statusClass}"></span> ${r.status}</td>
+                                    <td class="py-2 text-muted-foreground max-w-md truncate"><a href="${r.url}" target="_blank" rel="noopener noreferrer" class="hover:text-primary">${r.url}</a></td>
+                                    <td class="py-2 text-muted-foreground">${r.statusCode || '-'}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function filterLinks(status) {
+            document.querySelectorAll('.link-row').forEach(row => {
+                row.style.display = (status === 'all' || row.dataset.status === status) ? '' : 'none';
+            });
+        }
+
+        async function runFullLinkCheck() {
+            const btn = document.getElementById('linkCheckBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner mr-2"></span>Checking...';
+            try {
+                const res = await fetch(API_BASE + '/api/admin/link-check/full');
+                const data = await res.json();
+                if (data.summary) {
+                    displayLinkSummary({
+                        uniqueUrlsChecked: data.summary.totalLinks,
+                        healthy: data.summary.healthy,
+                        broken: data.summary.broken,
+                        redirects: data.summary.redirects || 0
+                    });
+                }
+                if (data.results) displayLinkResults({ results: data.results });
+            } catch (e) {
+                alert('Link check failed: ' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Run Full Check';
+            }
+        }
+
+        // ============================================
+        // PAPERWORK STATS (placeholder - populated in commit 6)
+        // ============================================
+        let paperworkDataLoaded = false;
+        async function loadPaperworkStats() { paperworkDataLoaded = true; }
+
+        // ============================================
+        // ANALYTICS (placeholder - populated in commit 6)
+        // ============================================
+        let analyticsDataLoaded = false;
+        async function loadAnalytics() { analyticsDataLoaded = true; }
+
+        // Load initial data
+        loadScraperHealth();
+    </script>
+</body>
+</html>
