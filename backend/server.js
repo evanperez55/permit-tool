@@ -46,6 +46,33 @@ function rateLimiter(req, res, next) {
 
 app.use('/api/', rateLimiter);
 
+// In-memory response cache for GET endpoints
+const responseCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function cacheMiddleware(req, res, next) {
+    if (req.method !== 'GET') return next();
+    const cached = responseCache.get(req.originalUrl);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        return res.json(cached.data);
+    }
+    const originalJson = res.json.bind(res);
+    res.json = (data) => {
+        responseCache.set(req.originalUrl, { data, timestamp: Date.now() });
+        return originalJson(data);
+    };
+    next();
+}
+
+const cachedPaths = ['/api/jurisdictions', '/api/verified-cities', '/api/paperwork-jurisdictions'];
+cachedPaths.forEach(path => app.use(path, cacheMiddleware));
+
+// Serve frontend static files in production
+if (process.env.NODE_ENV === 'production') {
+    const path = require('path');
+    app.use(express.static(path.join(__dirname, '..', 'frontend')));
+}
+
 // API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
     customCss: '.swagger-ui .topbar { display: none }',

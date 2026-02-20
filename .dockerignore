@@ -1,0 +1,10 @@
+node_modules
+.env
+.env.*
+!.env.example
+.git
+.claude
+*.md
+backend/__tests__
+backend/scrapers/downloads
+backend/fee-schedule-pdfs
