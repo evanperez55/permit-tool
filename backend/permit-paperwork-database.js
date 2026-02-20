@@ -814,6 +814,218 @@ const permitPaperwork = {
         notes: 'Valuation-based fees: $150 minimum, plan review adds 80-100% of permit fee'
       }
     ]
+  },
+
+  // Denver, CO
+  'Denver, CO': {
+    'Electrical': [
+      {
+        formType: 'Application',
+        formName: 'Electrical Permit Input Form',
+        formCode: 'ELEC',
+        url: 'https://www.denvergov.org/files/assets/public/v/2/community-planning-and-development/documents/ds/other-forms-and-guides/electrical_permit_input_form.pdf',
+        description: 'Primary form for licensed electrical contractors to apply for electrical permits in Denver',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: true,
+        fileType: 'pdf',
+        notes: 'Electrical work over 200 amps requires plan review; does not qualify as quick permit'
+      },
+      {
+        formType: 'Fee Schedule',
+        formName: 'ADMIN 138 - Denver Building Code Fee Policy',
+        formCode: 'ADMIN-138',
+        url: 'https://denvergov.org/files/assets/public/v/9/community-planning-and-development/documents/ds/building-codes/policies/admin_138.pdf',
+        description: 'Official fee policy with valuation-based permit fee tables for all trades',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Contains Table No. 1 (building permit fees), Table No. 3 (license fees), Table No. 4 (administrative fees)'
+      },
+      {
+        formType: 'Reference',
+        formName: 'Residential Permitting Guide',
+        formCode: 'DEN-RES-GUIDE',
+        url: 'https://www.denvergov.org/files/assets/public/v/5/community-planning-and-development/documents/ds/other-forms-and-guides/residential-permitting-guide.pdf',
+        description: 'Comprehensive guide for residential construction permitting including trade permits',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Covers electrical, plumbing, and mechanical trade permits for residential projects'
+      }
+    ],
+    'Plumbing': [
+      {
+        formType: 'Application',
+        formName: 'Plumbing Permit Input Form',
+        formCode: 'PLMB',
+        url: 'https://www.denvergov.org/files/assets/public/v/1/community-planning-and-development/documents/ds/other-forms-and-guides/plumbing_permit_input_form.pdf',
+        description: 'Primary form for licensed plumbing contractors to apply for plumbing permits',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: true,
+        fileType: 'pdf',
+        notes: 'Plumbing licenses in Denver renew every two years (not three like other trades)'
+      },
+      {
+        formType: 'Fee Schedule',
+        formName: 'ADMIN 138 - Denver Building Code Fee Policy',
+        formCode: 'ADMIN-138',
+        url: 'https://denvergov.org/files/assets/public/v/9/community-planning-and-development/documents/ds/building-codes/policies/admin_138.pdf',
+        description: 'Official fee policy with valuation-based permit fee tables for all trades',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Valuation-based fees; total value includes labor, materials, profit, overhead'
+      }
+    ],
+    'HVAC': [
+      {
+        formType: 'Application',
+        formName: 'Mechanical Permit Input Form',
+        formCode: 'MECH',
+        url: 'https://www.denvergov.org/files/assets/public/v/1/community-planning-and-development/documents/ds/other-forms-and-guides/mechanical_permit_input_form.pdf',
+        description: 'Primary form for licensed mechanical contractors to apply for HVAC/mechanical permits',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: true,
+        fileType: 'pdf',
+        notes: 'Covers heating, AC, ventilation, refrigeration, and boiler work'
+      },
+      {
+        formType: 'Fee Schedule',
+        formName: 'ADMIN 138 - Denver Building Code Fee Policy',
+        formCode: 'ADMIN-138',
+        url: 'https://denvergov.org/files/assets/public/v/9/community-planning-and-development/documents/ds/building-codes/policies/admin_138.pdf',
+        description: 'Official fee policy with valuation-based permit fee tables for all trades',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Valuation-based fees; total value includes labor, materials, profit, overhead'
+      }
+    ]
+  },
+
+  // Seattle, WA
+  'Seattle, WA': {
+    'Electrical': [
+      {
+        formType: 'Application',
+        formName: 'OTC Trade Permit (via Seattle Services Portal)',
+        formCode: 'SDCI-OTC',
+        url: 'https://cosaccela.seattle.gov/',
+        description: 'Online portal for electrical permit applications - most OTC permits issued immediately',
+        revisionDate: '2026-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'html',
+        notes: 'No PDF form - electrical permits are applied for online via the Seattle Services Portal'
+      },
+      {
+        formType: 'Reference',
+        formName: 'SDCI Tip #104 - Getting an OTC Permit',
+        formCode: 'CAM-104',
+        url: 'https://www.seattle.gov/dpd/publications/cam/cam104.pdf',
+        description: 'Overview of the OTC (Online Trade-Construction) permit process for trade permits',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Covers electrical, mechanical, furnace permits and OTC process'
+      },
+      {
+        formType: 'Fee Schedule',
+        formName: '2026 SDCI Fee Subtitle',
+        formCode: 'SDCI-FEES-2026',
+        url: 'https://www.seattle.gov/documents/departments/sdci/codes/feesubtitlefinal.pdf',
+        description: 'Complete fee schedule for all SDCI permits effective 2026',
+        revisionDate: '2026-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Base hourly rate $292/hour. Construction permit fees increased 18% for 2026'
+      }
+    ],
+    'Plumbing': [
+      {
+        formType: 'Application',
+        formName: 'Application Plumbing Permit',
+        formCode: 'PHSKC-PLUMB',
+        url: 'https://cdn.kingcounty.gov/-/media/king-county/depts/dph/documents/health-safety/environmental-health/plumbing-gas-piping/application-plumbing-permit.pdf',
+        description: 'Official plumbing permit application for Seattle and King County (issued by Public Health)',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: true,
+        fileType: 'pdf',
+        notes: 'Plumbing permits in Seattle are issued by Public Health - Seattle & King County, NOT SDCI'
+      },
+      {
+        formType: 'Supporting',
+        formName: 'Plumbing Plan Review Design Guidance',
+        formCode: 'PHSKC-DESIGN',
+        url: 'https://cdn.kingcounty.gov/-/media/king-county/depts/dph/documents/health-safety/environmental-health/plumbing-gas-piping/plumbing-design-guidance.pdf',
+        description: 'Design guidance document for plumbing plan review submissions',
+        revisionDate: '2025-11-21',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Required reference for plumbing plan review submissions'
+      },
+      {
+        formType: 'Fee Schedule',
+        formName: '2026 SDCI Fee Subtitle',
+        formCode: 'SDCI-FEES-2026',
+        url: 'https://www.seattle.gov/documents/departments/sdci/codes/feesubtitlefinal.pdf',
+        description: 'Complete fee schedule for all SDCI permits effective 2026',
+        revisionDate: '2026-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Plumbing permit fees are set by King County Public Health; SDCI fees for reference'
+      }
+    ],
+    'HVAC': [
+      {
+        formType: 'Application',
+        formName: 'Mechanical Permit Application/Checklist - Commercial & Multifamily',
+        formCode: 'SDCI-MECH-APP',
+        url: 'https://www.seattle.gov/Documents/Departments/SDCI/Forms/MechPermitAppCklistComMF.pdf',
+        description: 'STFI mechanical permit application and checklist for commercial and multifamily projects',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: true,
+        fileType: 'pdf',
+        notes: 'For single-family residential, apply online via Seattle Services Portal instead'
+      },
+      {
+        formType: 'Supporting',
+        formName: 'Building Energy Code STFI Checklist',
+        formCode: 'SDCI-ENERGY-STFI',
+        url: 'https://www.seattle.gov/documents/Departments/SDCI/Forms/BuildingEnergyCodeSTFICklist.pdf',
+        description: 'Required energy code compliance checklist for single-family/duplex STFI permits',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Required with HVAC permit applications for energy code compliance'
+      },
+      {
+        formType: 'Fee Schedule',
+        formName: '2026 SDCI Fee Subtitle',
+        formCode: 'SDCI-FEES-2026',
+        url: 'https://www.seattle.gov/documents/departments/sdci/codes/feesubtitlefinal.pdf',
+        description: 'Complete fee schedule for all SDCI permits effective 2026',
+        revisionDate: '2026-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Base hourly rate $292/hour. Construction permit fees increased 18% for 2026'
+      }
+    ]
   }
 };
 

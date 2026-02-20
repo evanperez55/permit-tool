@@ -580,6 +580,136 @@ app.get('/api/paperwork-jurisdictions', (req, res) => {
     }
 });
 
+// ===================================================================
+// SCRAPER HEALTH & SCHEDULING ENDPOINTS
+// ===================================================================
+
+const scraperHealth = require('./scraper-health');
+const { checkJurisdiction, checkAllLinks, quickCheck } = require('./link-health-checker');
+const { getScheduler } = require('./scraper-scheduler');
+
+// Get scraper health dashboard
+app.get('/api/admin/scraper-health', (req, res) => {
+    try {
+        const health = scraperHealth.getScraperHealth();
+        res.json({ success: true, ...health });
+    } catch (error) {
+        console.error('Error getting scraper health:', error.message);
+        res.status(500).json({ error: 'Failed to get scraper health', message: error.message });
+    }
+});
+
+// Get scraper run history
+app.get('/api/admin/scraper-runs', (req, res) => {
+    try {
+        const runs = scraperHealth.getRunHistory();
+        res.json({ success: true, runs, count: runs.length });
+    } catch (error) {
+        console.error('Error getting run history:', error.message);
+        res.status(500).json({ error: 'Failed to get run history', message: error.message });
+    }
+});
+
+// Get detail for a specific city's scraper data
+app.get('/api/admin/scraper-detail/:city', (req, res) => {
+    try {
+        const city = decodeURIComponent(req.params.city);
+        const detail = scraperHealth.getCityScraperDetail(city);
+        res.json({ success: true, ...detail });
+    } catch (error) {
+        console.error('Error getting city detail:', error.message);
+        res.status(500).json({ error: 'Failed to get city detail', message: error.message });
+    }
+});
+
+// Link health check - quick (unique URLs only)
+app.get('/api/admin/link-check', async (req, res) => {
+    try {
+        console.log('🔗 Starting quick link health check...');
+        const result = await quickCheck();
+        console.log(`🔗 Link check complete: ${result.healthy}/${result.uniqueUrlsChecked} healthy`);
+        res.json({ success: true, ...result });
+    } catch (error) {
+        console.error('Error running link check:', error.message);
+        res.status(500).json({ error: 'Failed to run link check', message: error.message });
+    }
+});
+
+// Link health check - full (all forms, all jurisdictions)
+app.get('/api/admin/link-check/full', async (req, res) => {
+    try {
+        console.log('🔗 Starting full link health check...');
+        const result = await checkAllLinks();
+        console.log(`🔗 Full link check complete: ${result.summary.healthy}/${result.summary.totalLinks} healthy`);
+        res.json({ success: true, ...result });
+    } catch (error) {
+        console.error('Error running full link check:', error.message);
+        res.status(500).json({ error: 'Failed to run full link check', message: error.message });
+    }
+});
+
+// Link health check - single jurisdiction
+app.get('/api/admin/link-check/:jurisdiction', async (req, res) => {
+    try {
+        const jurisdiction = decodeURIComponent(req.params.jurisdiction);
+        console.log(`🔗 Checking links for ${jurisdiction}...`);
+        const result = await checkJurisdiction(jurisdiction);
+        res.json({ success: true, ...result });
+    } catch (error) {
+        console.error('Error checking jurisdiction links:', error.message);
+        res.status(500).json({ error: 'Failed to check links', message: error.message });
+    }
+});
+
+// Scheduler status
+app.get('/api/admin/scheduler', (req, res) => {
+    try {
+        const scheduler = getScheduler();
+        res.json({ success: true, ...scheduler.getStatus() });
+    } catch (error) {
+        console.error('Error getting scheduler status:', error.message);
+        res.status(500).json({ error: 'Failed to get scheduler status', message: error.message });
+    }
+});
+
+// Start scheduler
+app.post('/api/admin/scheduler/start', (req, res) => {
+    try {
+        const scheduler = getScheduler();
+        scheduler.start();
+        res.json({ success: true, message: 'Scheduler started', ...scheduler.getStatus() });
+    } catch (error) {
+        console.error('Error starting scheduler:', error.message);
+        res.status(500).json({ error: 'Failed to start scheduler', message: error.message });
+    }
+});
+
+// Stop scheduler
+app.post('/api/admin/scheduler/stop', (req, res) => {
+    try {
+        const scheduler = getScheduler();
+        scheduler.stop();
+        res.json({ success: true, message: 'Scheduler stopped', ...scheduler.getStatus() });
+    } catch (error) {
+        console.error('Error stopping scheduler:', error.message);
+        res.status(500).json({ error: 'Failed to stop scheduler', message: error.message });
+    }
+});
+
+// Trigger manual scrape (single city)
+app.post('/api/admin/scrape/:city', async (req, res) => {
+    try {
+        const city = decodeURIComponent(req.params.city);
+        console.log(`🏙️ Manual scrape triggered for ${city}`);
+        const scheduler = getScheduler();
+        const result = await scheduler.runScrapeCity(city);
+        res.json({ success: true, ...result });
+    } catch (error) {
+        console.error('Error running manual scrape:', error.message);
+        res.status(500).json({ error: 'Failed to run scrape', message: error.message });
+    }
+});
+
 // Health check
 app.get('/health', (req, res) => {
     res.json({

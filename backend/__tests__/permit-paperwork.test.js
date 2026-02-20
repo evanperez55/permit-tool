@@ -115,7 +115,7 @@ describe('Permit Paperwork Database Functions', () => {
       const jurisdictions = getAvailableJurisdictions();
 
       expect(Array.isArray(jurisdictions)).toBe(true);
-      expect(jurisdictions.length).toBe(10);
+      expect(jurisdictions.length).toBe(12);
     });
 
     test('should include all major cities', () => {
@@ -223,10 +223,10 @@ describe('Permit Paperwork Database Functions', () => {
       expect(stats).toHaveProperty('jurisdictions');
     });
 
-    test('should have 10 jurisdictions', () => {
+    test('should have 12 jurisdictions', () => {
       const stats = getDatabaseStats();
 
-      expect(stats.totalJurisdictions).toBe(10);
+      expect(stats.totalJurisdictions).toBe(12);
     });
 
     test('should count forms correctly', () => {
@@ -820,7 +820,7 @@ describe('Integration Scenarios', () => {
 
     // Get admin summary
     const summary = getAdminSummary();
-    expect(summary.totalJurisdictions).toBe(10);
+    expect(summary.totalJurisdictions).toBe(12);
 
     // Check for outdated forms
     const outdated = getOutdatedForms();

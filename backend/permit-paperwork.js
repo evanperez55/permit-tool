@@ -238,6 +238,14 @@ function getPaperworkTips(jurisdiction, jobType) {
     tips.push('Phoenix uses a single unified application (TRT 00030) for all residential trades');
     tips.push('Residential permits now go through the SHAPE PHX portal');
     tips.push('Valuation-based fees with $150 minimum; plan review adds 80-100%');
+  } else if (jurisdiction === 'Denver, CO') {
+    tips.push('Use the ePermit online portal (Accela) at denvergov.org/epermits for all permit applications');
+    tips.push('Quick Permits available for qualifying trade work - issued without plan review');
+    tips.push('Denver uses the 2025 Denver Building Code with local amendments - do not assume standard IBC applies');
+  } else if (jurisdiction === 'Seattle, WA') {
+    tips.push('Plumbing permits are issued by Public Health - Seattle & King County, NOT SDCI');
+    tips.push('Most OTC trade permits are issued immediately after online submission via the Seattle Services Portal');
+    tips.push('Seattle uses locally amended codes - check Seattle-specific code references, not just NEC/UMC/UPC');
   }
 
   // Trade-specific tips

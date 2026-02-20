@@ -57,7 +57,9 @@ const PAPERWORK_CITIES = [
     'Chicago, IL',
     'New York, NY',
     'Milwaukee, WI',
-    'Phoenix, AZ'
+    'Phoenix, AZ',
+    'Denver, CO',
+    'Seattle, WA'
 ];
 
 // ============================================================
@@ -563,7 +565,7 @@ describe('Paperwork URL Validation', () => {
             console.log(`Form codes shared across trades (expected): ${duplicates.join(', ')}`);
         }
         // Cross-trade sharing is normal - flag only if suspiciously high
-        expect(duplicates.length).toBeLessThanOrEqual(20);
+        expect(duplicates.length).toBeLessThanOrEqual(25);
     });
 
     test('revision dates are valid format (YYYY-MM-DD)', () => {
@@ -587,16 +589,21 @@ describe('Paperwork URL Validation', () => {
 // ============================================================
 
 describe('Cross-Database Consistency', () => {
-    test('paperwork cities are a subset of fee database cities', () => {
-        for (const city of PAPERWORK_CITIES) {
-            expect(permitFees[city]).toBeDefined();
+    test('all named fee DB cities have paperwork data', () => {
+        const paperworkSet = new Set(PAPERWORK_CITIES);
+        for (const city of NAMED_CITIES) {
+            expect(paperworkSet.has(city)).toBe(true);
         }
     });
 
-    test('all named cities in fee DB are also in paperwork DB', () => {
-        const paperworkSet = new Set(PAPERWORK_CITIES);
-        const missingFromPaperwork = NAMED_CITIES.filter(c => !paperworkSet.has(c));
-        expect(missingFromPaperwork).toEqual([]);
+    test('paperwork cities are either in fee DB or use regional estimates', () => {
+        // Some paperwork cities (Denver, Seattle) don't have named fee entries
+        // but still have paperwork data - they use regional fee estimates
+        for (const city of PAPERWORK_CITIES) {
+            const hasFees = permitFees[city] !== undefined;
+            const hasRegion = require('../database-loader').detectRegion(city) !== null;
+            expect(hasFees || hasRegion).toBe(true);
+        }
     });
 
     test('dataQuality entries match fee database entries', () => {
@@ -632,9 +639,9 @@ describe('Cross-Database Consistency', () => {
 // ============================================================
 
 describe('Paperwork Database Functions', () => {
-    test('getAvailableJurisdictions returns all 10 paperwork cities', () => {
+    test('getAvailableJurisdictions returns all 12 paperwork cities', () => {
         const jurisdictions = getAvailableJurisdictions();
-        expect(jurisdictions.length).toBe(10);
+        expect(jurisdictions.length).toBe(12);
         for (const city of PAPERWORK_CITIES) {
             expect(jurisdictions).toContain(city);
         }
@@ -643,7 +650,7 @@ describe('Paperwork Database Functions', () => {
     test('getDatabaseStats returns valid statistics', () => {
         const stats = getDatabaseStats();
         expect(stats.totalForms).toBeGreaterThan(30);
-        expect(stats.totalJurisdictions).toBe(10);
+        expect(stats.totalJurisdictions).toBe(12);
         expect(stats.formsByType).toBeDefined();
     });
 

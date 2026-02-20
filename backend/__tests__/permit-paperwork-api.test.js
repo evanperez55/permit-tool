@@ -551,7 +551,7 @@ describe('Permit Paperwork API Integration Tests', () => {
             expect(response.body).toHaveProperty('totalForms');
             expect(response.body).toHaveProperty('totalJurisdictions');
             expect(response.body).toHaveProperty('formsByType');
-            expect(response.body.totalJurisdictions).toBe(10);
+            expect(response.body.totalJurisdictions).toBe(12);
         });
 
         test('should include form type breakdown', async () => {
@@ -610,7 +610,7 @@ describe('Permit Paperwork API Integration Tests', () => {
 
             expect(response.status).toBe(200);
             expect(response.body.success).toBe(true);
-            expect(response.body.count).toBe(10);
+            expect(response.body.count).toBe(12);
             expect(Array.isArray(response.body.jurisdictions)).toBe(true);
         });
 
