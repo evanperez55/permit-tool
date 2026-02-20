@@ -578,6 +578,242 @@ const permitPaperwork = {
         notes: 'Portal registration required'
       }
     ]
+  },
+
+  // Milwaukee, WI
+  'Milwaukee, WI': {
+    'Electrical': [
+      {
+        formType: 'Application',
+        formName: 'Electrical Permit Application',
+        formCode: 'EAppElectric',
+        url: 'https://city.milwaukee.gov/ImageLibrary/Groups/cityDCD/build/pdfs/EAppElectric.pdf',
+        description: 'Primary application for electrical work permits in Milwaukee',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: true,
+        fileType: 'pdf',
+        notes: 'Must be licensed electrician to pull permits'
+      },
+      {
+        formType: 'Reference',
+        formName: 'Electrical Permit Info Sheet',
+        formCode: 'DNS-Electrical',
+        url: 'https://city.milwaukee.gov/DNS/permits/Electrical.pdf',
+        description: 'DNS info sheet covering electrical permit requirements and process',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Reference document for electrical permit applicants'
+      },
+      {
+        formType: 'Fee Schedule',
+        formName: 'Plan Review and Permit Fees',
+        formCode: 'DevCenterFeeCombo',
+        url: 'https://city.milwaukee.gov/ImageLibrary/Groups/dnsAuthors/permits/Documents/DevCenterFeeCombo.pdf',
+        description: 'Consolidated fee schedule for all DNS permits and plan reviews',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Summary of MCO Chapter 81 fees. Updated annually January 1st'
+      }
+    ],
+    'Plumbing': [
+      {
+        formType: 'Application',
+        formName: 'Plumbing Plan Examination Application',
+        formCode: 'Plumbing-Plan-Exam-App',
+        url: 'https://city.milwaukee.gov/ImageLibrary/Groups/dnsAuthors/permits/Documents/Plumbing-Plan-Exam-Application-Form-2025-04-08.pdf',
+        description: 'Primary application for plumbing plan examination and permits',
+        revisionDate: '2025-04-08',
+        lastVerified: '2026-02-19',
+        isFillable: true,
+        fileType: 'pdf',
+        notes: 'All plumbing work requires a permit from the Development Center. Must be licensed plumber.'
+      },
+      {
+        formType: 'Reference',
+        formName: 'Plumbing & Gas Piping Plan Review Checklist',
+        formCode: 'Info-Sheet-19',
+        url: 'https://city.milwaukee.gov/ImageLibrary/Groups/dnsAuthors/permits/Documents/19---Info-Sheet-Plumbing--Gas-Piping-Plan-Review-Checklist_2024.pdf',
+        description: 'Checklist of required documents for plumbing/gas piping plan review submission',
+        revisionDate: '2024-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Use this checklist to ensure complete submission'
+      },
+      {
+        formType: 'Fee Schedule',
+        formName: 'Plan Review and Permit Fees',
+        formCode: 'DevCenterFeeCombo',
+        url: 'https://city.milwaukee.gov/ImageLibrary/Groups/dnsAuthors/permits/Documents/DevCenterFeeCombo.pdf',
+        description: 'Consolidated fee schedule for all DNS permits and plan reviews',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Plumbing plan review: 1.6% of project cost (min $200). Minor alteration: $110'
+      }
+    ],
+    'HVAC': [
+      {
+        formType: 'Application',
+        formName: 'Plan Examination Application',
+        formCode: 'EAppPlanExam',
+        url: 'https://city.milwaukee.gov/DNS/planning/EAppPlanExam.PDF',
+        description: 'General plan examination application - select HVAC Plan type for mechanical permits',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: true,
+        fileType: 'pdf',
+        notes: 'Multi-purpose form: check "HVAC Plan" box. Covers boiler, furnace, AC, refrigeration'
+      },
+      {
+        formType: 'Reference',
+        formName: 'HVAC Plan Review Requirements',
+        formCode: 'DNS-HVAC-PlanReview',
+        url: 'https://city.milwaukee.gov/DNS/planning/hvacplan.pdf',
+        description: 'HVAC plan review submission requirements and process',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Requires 4 sets HVAC plans, 1 set architectural plans, 1 copy HVAC specifications'
+      },
+      {
+        formType: 'Fee Schedule',
+        formName: 'Plan Review and Permit Fees',
+        formCode: 'DevCenterFeeCombo',
+        url: 'https://city.milwaukee.gov/ImageLibrary/Groups/dnsAuthors/permits/Documents/DevCenterFeeCombo.pdf',
+        description: 'Consolidated fee schedule for all DNS permits and plan reviews',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Mechanical plan review: 1.6% of cost (min $200 for 1-2 family)'
+      }
+    ]
+  },
+
+  // Phoenix, AZ
+  'Phoenix, AZ': {
+    'Electrical': [
+      {
+        formType: 'Application',
+        formName: 'Residential Construction Permit / Plan Review Application',
+        formCode: 'TRT 00030',
+        url: 'https://www.phoenix.gov/content/dam/phoenix/pddsite/documents/trt/external/dsd_trt_pdf_00030.pdf',
+        description: 'Unified application for all residential permits including electrical',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: true,
+        fileType: 'pdf',
+        notes: 'Single form covers Electrical, Mechanical/Plumbing, and Structural via checkboxes'
+      },
+      {
+        formType: 'Supporting',
+        formName: 'Special Inspection Certificate, Electrical',
+        formCode: 'TRT 00274',
+        url: 'https://www.phoenix.gov/content/dam/phoenix/pddsite/documents/trt/external/dsd_trt_pdf_00274.pdf',
+        description: 'Required special inspection certificate for electrical work',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Submit with permit application when special inspections are required'
+      },
+      {
+        formType: 'Fee Schedule',
+        formName: 'PDD Development Fee Schedule',
+        formCode: 'PDD-FEE-2026',
+        url: 'https://www.phoenix.gov/administration/departments/pdd/tools-resources/fees.html',
+        description: 'Current fee schedule for all permits (updated January 20, 2026)',
+        revisionDate: '2026-01-20',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'html',
+        notes: 'Valuation-based fees: $150 minimum, plan review adds 80-100% of permit fee'
+      }
+    ],
+    'Plumbing': [
+      {
+        formType: 'Application',
+        formName: 'Residential Construction Permit / Plan Review Application',
+        formCode: 'TRT 00030',
+        url: 'https://www.phoenix.gov/content/dam/phoenix/pddsite/documents/trt/external/dsd_trt_pdf_00030.pdf',
+        description: 'Unified application for all residential permits including plumbing',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: true,
+        fileType: 'pdf',
+        notes: 'Single form covers Electrical, Mechanical/Plumbing, and Structural via checkboxes'
+      },
+      {
+        formType: 'Supporting',
+        formName: 'Backflow Installation Application',
+        formCode: 'TRT 00344',
+        url: 'https://www.phoenix.gov/content/dam/phoenix/pddsite/documents/trt/external/dsd_trt_pdf_00344.pdf',
+        description: 'Application for backflow prevention device installation',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Required when installing backflow prevention devices'
+      },
+      {
+        formType: 'Fee Schedule',
+        formName: 'PDD Development Fee Schedule',
+        formCode: 'PDD-FEE-2026',
+        url: 'https://www.phoenix.gov/administration/departments/pdd/tools-resources/fees.html',
+        description: 'Current fee schedule for all permits (updated January 20, 2026)',
+        revisionDate: '2026-01-20',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'html',
+        notes: 'Valuation-based fees: $150 minimum, plan review adds 80-100% of permit fee'
+      }
+    ],
+    'HVAC': [
+      {
+        formType: 'Application',
+        formName: 'Residential Construction Permit / Plan Review Application',
+        formCode: 'TRT 00030',
+        url: 'https://www.phoenix.gov/content/dam/phoenix/pddsite/documents/trt/external/dsd_trt_pdf_00030.pdf',
+        description: 'Unified application for all residential permits including mechanical/HVAC',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: true,
+        fileType: 'pdf',
+        notes: 'Single form covers Electrical, Mechanical/Plumbing, and Structural via checkboxes'
+      },
+      {
+        formType: 'Supporting',
+        formName: 'Energy Compliance Certificate (Residential)',
+        formCode: 'TRT 00459',
+        url: 'https://www.phoenix.gov/content/dam/phoenix/pddsite/documents/trt/external/dsd_trt_pdf_00459.pdf',
+        description: 'Energy code compliance certificate for HVAC installations',
+        revisionDate: '2025-01-01',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'pdf',
+        notes: 'Required for HVAC installations to demonstrate energy code compliance'
+      },
+      {
+        formType: 'Fee Schedule',
+        formName: 'PDD Development Fee Schedule',
+        formCode: 'PDD-FEE-2026',
+        url: 'https://www.phoenix.gov/administration/departments/pdd/tools-resources/fees.html',
+        description: 'Current fee schedule for all permits (updated January 20, 2026)',
+        revisionDate: '2026-01-20',
+        lastVerified: '2026-02-19',
+        isFillable: false,
+        fileType: 'html',
+        notes: 'Valuation-based fees: $150 minimum, plan review adds 80-100% of permit fee'
+      }
+    ]
   }
 };
 

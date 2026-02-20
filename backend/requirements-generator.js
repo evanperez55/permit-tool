@@ -15,6 +15,32 @@ const { calculateFullPricing, normalizeJobType } = require('./pricing-calculator
 const { permitFees, dataQuality, detectRegion } = require('./database-loader');
 
 /**
+ * Multi-trade detection: jobs that commonly require additional permits
+ */
+const RELATED_TRADES = {
+    'Remodeling': ['Electrical', 'Plumbing', 'HVAC', 'General Construction'],
+    'General Construction': ['Electrical', 'Plumbing'],
+    'HVAC': ['Electrical'],
+    'Solar': ['Electrical'],
+    'Pool': ['Electrical', 'Plumbing', 'Fence'],
+    'Demolition': ['General Construction']
+};
+
+/**
+ * Get related trades that may also need permits
+ */
+function getRelatedTrades(normalizedType, scope) {
+    const related = RELATED_TRADES[normalizedType] || [];
+
+    // Renovation/Addition scopes often need more trades
+    if ((scope === 'Renovation' || scope === 'Addition') && !related.includes('General Construction')) {
+        return [...new Set([...related, 'General Construction'])];
+    }
+
+    return related;
+}
+
+/**
  * Standard inspections by trade type
  */
 const INSPECTIONS = {
@@ -167,19 +193,21 @@ function getStepByStepProcess(jurisdiction, jobType, hasPaperwork) {
  * @param {string} [params.projectType] - e.g. "Residential"
  * @param {string} [params.scope] - e.g. "New Installation"
  * @param {string} [params.description] - freeform description
+ * @param {number} [params.projectValue] - estimated project value in dollars
  * @returns {string} Markdown-formatted requirements
  */
-function generateRequirements({ jobType, city, state, projectType, scope, description }) {
+function generateRequirements({ jobType, city, state, projectType, scope, description, projectValue }) {
     const location = `${city}, ${state}`;
     const normalizedType = normalizeJobType(jobType);
     const resolvedLocation = detectRegion(location);
+    const resolvedProjectValue = Number(projectValue) > 0 ? Number(projectValue) : 5000;
 
     // Get fee data
     const feeData = permitFees[resolvedLocation];
     const quality = dataQuality[location] || dataQuality[resolvedLocation] || dataQuality['default'];
 
     // Get pricing
-    const pricing = calculateFullPricing(location, jobType, 5000);
+    const pricing = calculateFullPricing(location, jobType, resolvedProjectValue);
 
     // Get paperwork
     const forms = getFormsForTrade(location, normalizedType);
@@ -215,7 +243,22 @@ function generateRequirements({ jobType, city, state, projectType, scope, descri
         sections.push('- **Structural review** may be required for roof-mounted systems');
     }
     if (projectType === 'Commercial') {
-        sections.push('- **Commercial building permits** may have additional requirements beyond trade permits');
+        sections.push('- **Commercial building permit** - Additional requirements apply beyond trade permits');
+        sections.push('- **Fire department review** may be required for commercial spaces');
+        sections.push('- **ADA compliance review** required for public-facing commercial work');
+    } else if (projectType === 'Industrial') {
+        sections.push('- **Industrial use permit** may be required depending on facility classification');
+        sections.push('- **Environmental review** may be required for industrial projects');
+    }
+
+    // Multi-trade suggestions
+    const relatedTrades = getRelatedTrades(normalizedType, scope);
+    if (relatedTrades.length > 0) {
+        sections.push('');
+        sections.push('**You may also need permits for:**');
+        for (const trade of relatedTrades) {
+            sections.push(`- ${trade} permit (commonly required alongside ${normalizedType.toLowerCase()} work)`);
+        }
     }
     sections.push('');
 
@@ -288,7 +331,8 @@ function generateRequirements({ jobType, city, state, projectType, scope, descri
     // --- Estimated Costs ---
     sections.push('## Estimated Costs');
     const permitFee = pricing.permitFee;
-    sections.push(`- **Permit fee:** $${permitFee.minFee} - $${permitFee.maxFee}`);
+    sections.push(`- **Calculated permit fee for your $${resolvedProjectValue.toLocaleString()} project:** $${permitFee.permitFee}`);
+    sections.push(`- **Fee range:** $${permitFee.minFee} - $${permitFee.maxFee}`);
     if (permitFee.baseFee) {
         sections.push(`- **Base fee:** $${permitFee.baseFee}`);
     }
@@ -340,4 +384,12 @@ function generateRequirements({ jobType, city, state, projectType, scope, descri
     return sections.join('\n');
 }
 
-module.exports = { generateRequirements };
+/**
+ * Get the inspection list for a given job type
+ */
+function getInspections(jobType) {
+    const normalizedType = normalizeJobType(jobType);
+    return INSPECTIONS[normalizedType] || INSPECTIONS['General Construction'];
+}
+
+module.exports = { generateRequirements, getInspections };

@@ -18,7 +18,7 @@ const request = require('supertest');
 const express = require('express');
 const { calculateFullPricing, generateClientExplanation } = require('../pricing-calculator');
 const { generateAllClientTemplates } = require('../client-templates');
-const { generateRequirements } = require('../requirements-generator');
+const { generateRequirements, getInspections } = require('../requirements-generator');
 const {
     getSupportedJurisdictions,
     compareJurisdictions,
@@ -44,15 +44,16 @@ app.get('/health', (req, res) => {
 // Check requirements (static - no OpenAI needed)
 app.post('/api/check-requirements', async (req, res) => {
     try {
-        const { jobType, city, state, projectType, scope, description } = req.body;
+        const { jobType, city, state, projectType, scope, description, projectValue } = req.body;
         if (!jobType || !city || !state) {
             return res.status(400).json({
                 error: 'Missing required fields: jobType, city, and state are required'
             });
         }
-        const requirements = generateRequirements({ jobType, city, state, projectType, scope, description });
+        const resolvedProjectValue = Number(projectValue) > 0 ? Number(projectValue) : 5000;
+        const requirements = generateRequirements({ jobType, city, state, projectType, scope, description, projectValue: resolvedProjectValue });
         const location = `${city}, ${state}`;
-        const pricingData = calculateFullPricing(location, jobType, 5000);
+        const pricingData = calculateFullPricing(location, jobType, resolvedProjectValue);
         const clientExplanation = generateClientExplanation(pricingData);
         const fullPricingData = {
             pricing: pricingData,
@@ -65,7 +66,8 @@ app.post('/api/check-requirements', async (req, res) => {
             pricing: pricingData,
             clientExplanation,
             clientTemplates,
-            metadata: { jobType, location, projectType, scope, timestamp: new Date().toISOString() }
+            inspections: getInspections(jobType),
+            metadata: { jobType, location, projectType, scope, projectValue: resolvedProjectValue, timestamp: new Date().toISOString() }
         });
     } catch (error) {
         res.status(500).json({ error: 'Failed to analyze permit requirements', message: error.message });
@@ -307,6 +309,57 @@ describe('POST /api/check-requirements', () => {
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
         expect(res.body.requirements).toContain('## Required Permits');
+    });
+
+    test('returns inspections list', async () => {
+        const res = await request(app)
+            .post('/api/check-requirements')
+            .send({ jobType: 'Electrical', city: 'Los Angeles', state: 'CA' });
+        expect(Array.isArray(res.body.inspections)).toBe(true);
+        expect(res.body.inspections.length).toBeGreaterThan(0);
+        expect(res.body.inspections[0]).toContain('inspection');
+    });
+
+    test('respects custom projectValue', async () => {
+        const res = await request(app)
+            .post('/api/check-requirements')
+            .send({ jobType: 'Electrical', city: 'Los Angeles', state: 'CA', projectValue: 50000 });
+        expect(res.status).toBe(200);
+        expect(res.body.metadata.projectValue).toBe(50000);
+        // Higher project value should yield higher permit fee
+        expect(res.body.pricing.permitFee.permitFee).toBeGreaterThan(150);
+        // Requirements should mention the project value
+        expect(res.body.requirements).toContain('$50,000');
+    });
+
+    test('defaults projectValue to 5000 when not provided', async () => {
+        const res = await request(app)
+            .post('/api/check-requirements')
+            .send({ jobType: 'Electrical', city: 'Los Angeles', state: 'CA' });
+        expect(res.body.metadata.projectValue).toBe(5000);
+    });
+
+    test('includes multi-trade suggestions for Remodeling', async () => {
+        const res = await request(app)
+            .post('/api/check-requirements')
+            .send({ jobType: 'Remodeling/Renovation', city: 'Houston', state: 'TX' });
+        expect(res.body.requirements).toContain('also need permits');
+    });
+
+    test('includes Milwaukee paperwork forms', async () => {
+        const res = await request(app)
+            .post('/api/check-requirements')
+            .send({ jobType: 'Electrical', city: 'Milwaukee', state: 'WI' });
+        expect(res.status).toBe(200);
+        expect(res.body.requirements).toContain('EAppElectric');
+    });
+
+    test('includes Phoenix paperwork forms', async () => {
+        const res = await request(app)
+            .post('/api/check-requirements')
+            .send({ jobType: 'Electrical', city: 'Phoenix', state: 'AZ' });
+        expect(res.status).toBe(200);
+        expect(res.body.requirements).toContain('TRT 00030');
     });
 });
 

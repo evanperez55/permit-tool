@@ -230,6 +230,14 @@ function getPaperworkTips(jurisdiction, jobType) {
   } else if (jurisdiction === 'Chicago, IL') {
     tips.push('Express permits available for qualifying minor work');
     tips.push('Energy code forms (408 series) required for many projects');
+  } else if (jurisdiction === 'Milwaukee, WI') {
+    tips.push('Submit permits at the Development Center (809 N. Broadway, 1st Floor)');
+    tips.push('Online applications available through the Accela portal');
+    tips.push('Plan review fees due at submission; permit fees due before issuance');
+  } else if (jurisdiction === 'Phoenix, AZ') {
+    tips.push('Phoenix uses a single unified application (TRT 00030) for all residential trades');
+    tips.push('Residential permits now go through the SHAPE PHX portal');
+    tips.push('Valuation-based fees with $150 minimum; plan review adds 80-100%');
   }
 
   // Trade-specific tips

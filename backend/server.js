@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { calculateFullPricing, generateClientExplanation } = require('./pricing-calculator');
 const { generateAllClientTemplates } = require('./client-templates');
-const { generateRequirements } = require('./requirements-generator');
+const { generateRequirements, getInspections } = require('./requirements-generator');
 const {
     getSupportedJurisdictions,
     compareJurisdictions,
@@ -29,7 +29,8 @@ app.post('/api/check-requirements', async (req, res) => {
             state,
             projectType,
             scope,
-            description
+            description,
+            projectValue
         } = req.body;
 
         // Validate inputs
@@ -39,20 +40,23 @@ app.post('/api/check-requirements', async (req, res) => {
             });
         }
 
+        const resolvedProjectValue = Number(projectValue) > 0 ? Number(projectValue) : 5000;
+
         console.log(`\n📋 Analyzing permit requirements:`);
         console.log(`   Job: ${jobType}`);
         console.log(`   Location: ${city}, ${state}`);
         console.log(`   Type: ${projectType}`);
         console.log(`   Scope: ${scope}`);
+        console.log(`   Project value: $${resolvedProjectValue}`);
 
         // Generate requirements from static data
-        const requirements = generateRequirements({ jobType, city, state, projectType, scope, description });
+        const requirements = generateRequirements({ jobType, city, state, projectType, scope, description, projectValue: resolvedProjectValue });
 
         console.log(`✅ Requirements generated (${requirements.length} chars)`);
 
         // Calculate comprehensive pricing
         const location = `${city}, ${state}`;
-        const pricingData = calculateFullPricing(location, jobType, 5000); // Default $5k project
+        const pricingData = calculateFullPricing(location, jobType, resolvedProjectValue);
         const clientExplanation = generateClientExplanation(pricingData);
 
         // Generate client communication templates
@@ -78,11 +82,13 @@ app.post('/api/check-requirements', async (req, res) => {
             pricing: pricingData,
             clientExplanation: clientExplanation,
             clientTemplates: clientTemplates,
+            inspections: getInspections(jobType),
             metadata: {
                 jobType,
                 location: `${city}, ${state}`,
                 projectType,
                 scope,
+                projectValue: resolvedProjectValue,
                 timestamp: new Date().toISOString()
             }
         });

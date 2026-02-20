@@ -225,6 +225,25 @@
             border-color: hsl(222.2 47.4% 11.2%);
             box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.1);
         }
+
+        /* Print / PDF export styles */
+        @media print {
+            body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            #formCard, #comparisonCard, #loading, #templateModal, .btn-primary, button { display: none !important; }
+            #results { display: block !important; }
+            #results > div { break-inside: avoid; border: 1px solid #ddd !important; margin-bottom: 1rem; }
+            .animate-fade-in, .animate-slide-in { animation: none !important; }
+            .card-hover:hover { transform: none; box-shadow: none; }
+            header { margin-bottom: 1rem; }
+            /* Show print header */
+            .print-header { display: block !important; text-align: center; margin-bottom: 1.5rem; border-bottom: 2px solid #222; padding-bottom: 0.75rem; }
+            .print-header h2 { font-size: 1.25rem; margin: 0; }
+            .print-header p { font-size: 0.75rem; color: #666; margin: 0.25rem 0 0; }
+            /* Show action buttons row but hide the buttons */
+            #results > .flex.flex-wrap { display: none !important; }
+            #results > button { display: none !important; }
+        }
+        .print-header { display: none; }
     </style>
 </head>
 <body class="antialiased">
@@ -306,7 +325,7 @@
                     <input type="hidden" id="city" value="">
                     <input type="hidden" id="state" value="">
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label for="projectType" class="block text-sm font-medium text-foreground mb-2">
                                 Project Type
@@ -329,6 +348,16 @@
                                 <option value="Renovation">Renovation</option>
                                 <option value="Addition">Addition</option>
                             </select>
+                        </div>
+
+                        <div>
+                            <label for="projectValue" class="block text-sm font-medium text-foreground mb-2">
+                                Estimated Project Value
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">$</span>
+                                <input type="number" id="projectValue" min="0" step="500" value="5000" placeholder="5000" class="form-input w-full pl-7 pr-4 py-2.5 border border-input rounded-md bg-background text-foreground">
+                            </div>
                         </div>
                     </div>
 
@@ -427,6 +456,11 @@
 
         <!-- Results Section -->
         <div id="results" class="hidden space-y-6">
+            <!-- Print-only header -->
+            <div class="print-header">
+                <h2>Permit Assistant Report</h2>
+                <p id="printMeta"></p>
+            </div>
             <!-- Pricing Calculator Card (Main Feature) -->
             <div class="bg-white border-2 border-primary rounded-lg shadow-lg p-6 animate-fade-in">
                 <div class="flex items-start justify-between mb-6">
@@ -562,6 +596,30 @@
                 </div>
             </div>
 
+            <!-- Inspection Checklist -->
+            <div class="bg-white border border-border rounded-lg shadow-sm p-6 animate-fade-in">
+                <div class="flex items-start justify-between mb-4">
+                    <h3 class="font-semibold text-foreground flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                        Inspection Checklist
+                    </h3>
+                    <div class="text-right">
+                        <span id="inspectionProgress" class="text-sm font-medium text-muted-foreground">0 / 0</span>
+                        <div class="w-24 h-2 bg-muted rounded-full mt-1 overflow-hidden">
+                            <div id="inspectionProgressBar" class="h-full bg-success rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-sm text-muted-foreground mb-4">
+                    Track your inspections as you complete them. Progress is saved automatically.
+                </p>
+                <div id="inspectionChecklist" class="space-y-2">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+
             <!-- Permit Requirements -->
             <div class="bg-white border border-border rounded-lg shadow-sm p-6 animate-fade-in">
                 <h3 class="font-semibold text-foreground flex items-center gap-2 mb-4">
@@ -577,11 +635,11 @@
 
             <!-- Action Buttons -->
             <div class="flex flex-wrap gap-3">
-                <button onclick="window.print()" class="flex-1 min-w-[140px] bg-secondary text-secondary-foreground px-4 py-2.5 rounded-md font-medium text-sm hover:bg-secondary/80 transition-colors">
+                <button onclick="printReport()" class="flex-1 min-w-[140px] bg-secondary text-secondary-foreground px-4 py-2.5 rounded-md font-medium text-sm hover:bg-secondary/80 transition-colors" title="Use 'Save as PDF' in the print dialog to download">
                     <svg class="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    Print
+                    Save as PDF
                 </button>
                 <button onclick="emailResults()" class="flex-1 min-w-[140px] bg-secondary text-secondary-foreground px-4 py-2.5 rounded-md font-medium text-sm hover:bg-secondary/80 transition-colors">
                     <svg class="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -694,7 +752,8 @@
                 state: document.getElementById('state').value,
                 projectType: document.getElementById('projectType').value,
                 scope: document.getElementById('scope').value,
-                description: document.getElementById('description').value
+                description: document.getElementById('description').value,
+                projectValue: Number(document.getElementById('projectValue').value) || 5000
             };
 
             // Show loading
@@ -811,6 +870,11 @@
 
             // Fetch and display permit paperwork
             fetchPaperwork(metadata.location, metadata.jobType);
+
+            // Inspection checklist
+            if (data.inspections) {
+                displayInspectionChecklist(data.inspections, metadata.location, metadata.jobType);
+            }
 
             // Requirements
             document.getElementById('requirementsContent').innerHTML = marked.parse(requirements);
@@ -1155,6 +1219,73 @@
                 closeModal();
             }
         });
+
+        // ============================================
+        // INSPECTION CHECKLIST
+        // ============================================
+
+        function getInspectionStorageKey(location, jobType) {
+            return `permit-inspections-${location}-${jobType}`;
+        }
+
+        function displayInspectionChecklist(inspections, location, jobType) {
+            const container = document.getElementById('inspectionChecklist');
+            const storageKey = getInspectionStorageKey(location, jobType);
+            const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+
+            container.innerHTML = inspections.map((inspection, i) => {
+                const checked = saved[i] ? 'checked' : '';
+                const completedClass = saved[i] ? 'bg-success/10 border-success/30' : 'bg-white';
+                return `
+                    <label class="flex items-center gap-3 p-3 border border-border rounded-md cursor-pointer transition-all hover:bg-accent/30 ${completedClass}" id="inspection-${i}">
+                        <input type="checkbox" ${checked}
+                            onchange="toggleInspection('${storageKey}', ${i}, ${inspections.length})"
+                            class="w-5 h-5 rounded border-input text-success focus:ring-2 focus:ring-ring flex-shrink-0" />
+                        <div class="flex-1">
+                            <span class="text-sm font-medium text-foreground ${saved[i] ? 'line-through opacity-60' : ''}">${inspection}</span>
+                            ${!saved[i] && i === Object.keys(saved).filter(k => saved[k]).length ? '<span class="ml-2 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">Next up</span>' : ''}
+                        </div>
+                    </label>
+                `;
+            }).join('');
+
+            updateInspectionProgress(storageKey, inspections.length);
+        }
+
+        function toggleInspection(storageKey, index, total) {
+            const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            saved[index] = !saved[index];
+            localStorage.setItem(storageKey, JSON.stringify(saved));
+
+            // Re-render to update styling
+            if (currentData && currentData.inspections) {
+                displayInspectionChecklist(currentData.inspections, currentData.metadata.location, currentData.metadata.jobType);
+            }
+        }
+
+        function updateInspectionProgress(storageKey, total) {
+            const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            const completed = Object.values(saved).filter(Boolean).length;
+            const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            document.getElementById('inspectionProgress').textContent = `${completed} / ${total}`;
+            document.getElementById('inspectionProgressBar').style.width = `${percent}%`;
+
+            if (completed === total && total > 0) {
+                document.getElementById('inspectionProgress').textContent = `${completed} / ${total} - All passed!`;
+                document.getElementById('inspectionProgress').classList.add('text-success');
+            } else {
+                document.getElementById('inspectionProgress').classList.remove('text-success');
+            }
+        }
+
+        function printReport() {
+            if (currentData) {
+                document.getElementById('printMeta').textContent =
+                    `${currentData.metadata.jobType} in ${currentData.metadata.location} | Generated ${new Date().toLocaleDateString()}`;
+            }
+            window.print();
+        }
 
         function resetForm() {
             formCard.classList.remove('hidden');

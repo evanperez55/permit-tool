@@ -55,7 +55,9 @@ const PAPERWORK_CITIES = [
     'Houston, TX',
     'Miami, FL',
     'Chicago, IL',
-    'New York, NY'
+    'New York, NY',
+    'Milwaukee, WI',
+    'Phoenix, AZ'
 ];
 
 // ============================================================
@@ -561,7 +563,7 @@ describe('Paperwork URL Validation', () => {
             console.log(`Form codes shared across trades (expected): ${duplicates.join(', ')}`);
         }
         // Cross-trade sharing is normal - flag only if suspiciously high
-        expect(duplicates.length).toBeLessThanOrEqual(15);
+        expect(duplicates.length).toBeLessThanOrEqual(20);
     });
 
     test('revision dates are valid format (YYYY-MM-DD)', () => {
@@ -591,13 +593,10 @@ describe('Cross-Database Consistency', () => {
         }
     });
 
-    test('document cities in fee DB but NOT in paperwork DB', () => {
+    test('all named cities in fee DB are also in paperwork DB', () => {
         const paperworkSet = new Set(PAPERWORK_CITIES);
         const missingFromPaperwork = NAMED_CITIES.filter(c => !paperworkSet.has(c));
-        // Milwaukee and Phoenix are in fee DB but not paperwork DB
-        expect(missingFromPaperwork).toContain('Milwaukee, WI');
-        expect(missingFromPaperwork).toContain('Phoenix, AZ');
-        console.log(`Cities in fee DB but missing from paperwork DB: ${missingFromPaperwork.join(', ')}`);
+        expect(missingFromPaperwork).toEqual([]);
     });
 
     test('dataQuality entries match fee database entries', () => {
@@ -633,9 +632,9 @@ describe('Cross-Database Consistency', () => {
 // ============================================================
 
 describe('Paperwork Database Functions', () => {
-    test('getAvailableJurisdictions returns all 8 paperwork cities', () => {
+    test('getAvailableJurisdictions returns all 10 paperwork cities', () => {
         const jurisdictions = getAvailableJurisdictions();
-        expect(jurisdictions.length).toBe(8);
+        expect(jurisdictions.length).toBe(10);
         for (const city of PAPERWORK_CITIES) {
             expect(jurisdictions).toContain(city);
         }
@@ -644,7 +643,7 @@ describe('Paperwork Database Functions', () => {
     test('getDatabaseStats returns valid statistics', () => {
         const stats = getDatabaseStats();
         expect(stats.totalForms).toBeGreaterThan(30);
-        expect(stats.totalJurisdictions).toBe(8);
+        expect(stats.totalJurisdictions).toBe(10);
         expect(stats.formsByType).toBeDefined();
     });
 
