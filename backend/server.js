@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swagger');
 const { calculateFullPricing, generateClientExplanation } = require('./pricing-calculator');
 const { generateAllClientTemplates } = require('./client-templates');
 const { generateRequirements, getInspections } = require('./requirements-generator');
@@ -19,6 +21,12 @@ const PORT = process.env.PORT || 5001;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// API Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Permit Assistant API Docs'
+}));
 
 // Main API endpoint
 app.post('/api/check-requirements', async (req, res) => {
@@ -721,5 +729,6 @@ app.get('/health', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`\n🚀 Permit Assistant API running on port ${PORT}`);
-    console.log(`📍 Health check: http://localhost:${PORT}/health\n`);
+    console.log(`📍 Health check: http://localhost:${PORT}/health`);
+    console.log(`📖 API docs: http://localhost:${PORT}/api-docs\n`);
 });

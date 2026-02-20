@@ -8,29 +8,30 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        border: "hsl(214.3 31.8% 91.4%)",
-                        input: "hsl(214.3 31.8% 91.4%)",
-                        ring: "hsl(222.2 84% 4.9%)",
-                        background: "hsl(0 0% 100%)",
-                        foreground: "hsl(222.2 84% 4.9%)",
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
                         primary: {
-                            DEFAULT: "hsl(222.2 47.4% 11.2%)",
-                            foreground: "hsl(210 40% 98%)",
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))",
                         },
                         secondary: {
-                            DEFAULT: "hsl(210 40% 96.1%)",
-                            foreground: "hsl(222.2 47.4% 11.2%)",
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))",
                         },
                         muted: {
-                            DEFAULT: "hsl(210 40% 96.1%)",
-                            foreground: "hsl(215.4 16.3% 46.9%)",
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
                         },
                         accent: {
-                            DEFAULT: "hsl(210 40% 96.1%)",
-                            foreground: "hsl(222.2 47.4% 11.2%)",
+                            DEFAULT: "hsl(var(--accent))",
+                            foreground: "hsl(var(--accent-foreground))",
                         },
                         destructive: {
                             DEFAULT: "hsl(0 84.2% 60.2%)",
@@ -53,13 +54,51 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+        :root {
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+        }
+
+        .dark {
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 212.7 26.8% 83.9%;
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --primary: 210 40% 98%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --card: 222.2 84% 4.9%;
+            --card-foreground: 210 40% 98%;
+        }
+
         * {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         body {
-            background: linear-gradient(to bottom right, hsl(210 40% 98%), hsl(214.3 31.8% 91.4%));
+            background: linear-gradient(to bottom right, hsl(var(--secondary)), hsl(var(--border)));
             min-height: 100vh;
+            color: hsl(var(--foreground));
+            transition: background-color 0.3s, color 0.3s;
         }
 
         /* Custom scrollbar */
@@ -68,16 +107,16 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: hsl(210 40% 96.1%);
+            background: hsl(var(--muted));
         }
 
         ::-webkit-scrollbar-thumb {
-            background: hsl(215.4 16.3% 46.9%);
+            background: hsl(var(--muted-foreground));
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: hsl(222.2 47.4% 11.2%);
+            background: hsl(var(--primary));
         }
 
         /* Animations */
@@ -135,14 +174,14 @@
         /* Form focus rings */
         .form-input:focus {
             outline: none;
-            border-color: hsl(222.2 84% 4.9%);
-            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+            border-color: hsl(var(--ring));
+            box-shadow: 0 0 0 3px hsl(var(--ring) / 0.1);
         }
 
         /* Loading spinner */
         .spinner {
-            border: 3px solid hsl(210 40% 96.1%);
-            border-top-color: hsl(222.2 47.4% 11.2%);
+            border: 3px solid hsl(var(--muted));
+            border-top-color: hsl(var(--primary));
             border-radius: 50%;
             width: 48px;
             height: 48px;
@@ -177,12 +216,12 @@
 
         /* Results content styling */
         .results-content h2 {
-            color: hsl(222.2 47.4% 11.2%);
+            color: hsl(var(--foreground));
             font-size: 1.25rem;
             font-weight: 600;
             margin: 1.5rem 0 0.75rem 0;
             padding-top: 1rem;
-            border-top: 1px solid hsl(214.3 31.8% 91.4%);
+            border-top: 1px solid hsl(var(--border));
         }
 
         .results-content h2:first-child {
@@ -198,11 +237,11 @@
 
         .results-content li {
             margin-bottom: 0.5rem;
-            color: hsl(215.4 16.3% 26.9%);
+            color: hsl(var(--muted-foreground));
         }
 
         .results-content strong {
-            color: hsl(222.2 47.4% 11.2%);
+            color: hsl(var(--foreground));
             font-weight: 600;
         }
 
@@ -214,15 +253,15 @@
         }
 
         .pricing-item {
-            background: white;
-            border: 1px solid hsl(214.3 31.8% 91.4%);
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
             border-radius: 0.5rem;
             padding: 1rem;
             transition: all 0.2s;
         }
 
         .pricing-item:hover {
-            border-color: hsl(222.2 47.4% 11.2%);
+            border-color: hsl(var(--primary));
             box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.1);
         }
 
@@ -237,8 +276,8 @@
             left: 0;
             right: 0;
             z-index: 40;
-            background: white;
-            border: 1px solid hsl(214.3 31.8% 91.4%);
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
             border-top: none;
             border-radius: 0 0 0.5rem 0.5rem;
             box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.12);
@@ -262,13 +301,13 @@
 
         .autocomplete-option:hover,
         .autocomplete-option.highlighted {
-            background: hsl(210 40% 96.1%);
+            background: hsl(var(--accent));
         }
 
         .autocomplete-option .city-name {
             font-weight: 500;
             font-size: 0.875rem;
-            color: hsl(222.2 84% 4.9%);
+            color: hsl(var(--foreground));
         }
 
         .autocomplete-option .city-badge {
@@ -294,7 +333,7 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: hsl(215.4 16.3% 46.9%);
+            color: hsl(var(--muted-foreground));
         }
 
         /* Saved projects drawer */
@@ -310,15 +349,16 @@
             border-radius: 9999px;
             font-size: 0.75rem;
             font-weight: 500;
-            background: white;
-            border: 1px solid hsl(214.3 31.8% 91.4%);
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            color: hsl(var(--foreground));
             cursor: pointer;
             transition: all 0.2s;
             white-space: nowrap;
         }
 
         .saved-project-chip:hover {
-            border-color: hsl(222.2 47.4% 11.2%);
+            border-color: hsl(var(--primary));
             box-shadow: 0 2px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
@@ -383,6 +423,91 @@
             #results > button { display: none !important; }
         }
         .print-header { display: none; }
+
+        /* Error toast */
+        .error-toast {
+            position: fixed;
+            top: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(-120%);
+            z-index: 100;
+            max-width: 480px;
+            width: calc(100% - 2rem);
+            background: hsl(var(--card));
+            border: 1px solid hsl(0 84.2% 60.2% / 0.3);
+            border-left: 4px solid hsl(0 84.2% 60.2%);
+            border-radius: 0.5rem;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .error-toast.visible {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Dark mode toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 50;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            box-shadow: 0 2px 10px -2px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            color: hsl(var(--foreground));
+        }
+
+        .theme-toggle:hover {
+            box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.25);
+            transform: scale(1.05);
+        }
+
+        /* Dark mode card overrides */
+        .dark .bg-white {
+            background: hsl(var(--card)) !important;
+        }
+
+        .dark .bg-green-50 { background: hsl(142.1 76.2% 36.3% / 0.1) !important; }
+        .dark .border-green-200 { border-color: hsl(142.1 76.2% 36.3% / 0.2) !important; }
+        .dark .text-green-600 { color: hsl(142.1 70% 50%) !important; }
+        .dark .bg-green-100 { background: hsl(142.1 76.2% 36.3% / 0.15) !important; }
+        .dark .text-green-800 { color: hsl(142.1 70% 60%) !important; }
+        .dark .border-green-300 { border-color: hsl(142.1 76.2% 36.3% / 0.3) !important; }
+
+        .dark .bg-yellow-50 { background: hsl(38 92% 50% / 0.1) !important; }
+        .dark .border-yellow-200 { border-color: hsl(38 92% 50% / 0.2) !important; }
+        .dark .text-yellow-600 { color: hsl(38 92% 60%) !important; }
+        .dark .bg-yellow-100 { background: hsl(38 92% 50% / 0.15) !important; }
+        .dark .text-yellow-800 { color: hsl(38 92% 65%) !important; }
+        .dark .border-yellow-300 { border-color: hsl(38 92% 50% / 0.3) !important; }
+        .dark .text-yellow-900 { color: hsl(38 92% 70%) !important; }
+        .dark .bg-yellow-100\/50 { background: hsl(38 92% 50% / 0.08) !important; }
+
+        .dark .bg-amber-50 { background: hsl(38 92% 50% / 0.1) !important; }
+        .dark .border-amber-200 { border-color: hsl(38 92% 50% / 0.2) !important; }
+        .dark .text-amber-600 { color: hsl(38 92% 60%) !important; }
+
+        .dark .bg-blue-50 { background: hsl(217 91% 60% / 0.1) !important; }
+        .dark .border-blue-200 { border-color: hsl(217 91% 60% / 0.2) !important; }
+        .dark .text-blue-600 { color: hsl(217 91% 70%) !important; }
+
+        .dark .text-gray-600 { color: hsl(var(--muted-foreground)) !important; }
+        .dark .text-gray-700 { color: hsl(var(--foreground)) !important; }
+
+        .dark select, .dark input, .dark textarea {
+            background: hsl(var(--secondary)) !important;
+            color: hsl(var(--foreground)) !important;
+            border-color: hsl(var(--border)) !important;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -860,12 +985,115 @@
         </div>
     </div>
 
+    <!-- Error Toast -->
+    <div id="errorToast" class="error-toast" role="alert">
+        <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+            <div class="flex-1">
+                <p class="text-sm font-semibold text-foreground" id="errorToastTitle">Error</p>
+                <p class="text-sm text-muted-foreground mt-1" id="errorToastMessage"></p>
+            </div>
+            <button onclick="hideError()" class="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Dark Mode Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode" id="themeToggle">
+        <svg id="sunIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <svg id="moonIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+    </button>
+
     <script>
         const API_URL = 'http://localhost:5001/api/check-requirements';
         let currentData = null;
         let currentTemplate = null;
         let verifiedCities = [];
         let highlightedIndex = -1;
+        let errorTimeout = null;
+
+        // ============================================
+        // DARK MODE
+        // ============================================
+
+        function getThemePreference() {
+            const stored = localStorage.getItem('permit-assistant-theme');
+            if (stored) return stored;
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        function applyTheme(theme) {
+            document.documentElement.classList.toggle('dark', theme === 'dark');
+            document.getElementById('sunIcon').classList.toggle('hidden', theme === 'light');
+            document.getElementById('moonIcon').classList.toggle('hidden', theme === 'dark');
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            const next = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('permit-assistant-theme', next);
+            applyTheme(next);
+        }
+
+        // Apply theme immediately
+        applyTheme(getThemePreference());
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('permit-assistant-theme')) {
+                applyTheme(e.matches ? 'dark' : 'light');
+            }
+        });
+
+        // ============================================
+        // ERROR TOAST
+        // ============================================
+
+        function showError(title, message) {
+            const toast = document.getElementById('errorToast');
+            document.getElementById('errorToastTitle').textContent = title;
+            document.getElementById('errorToastMessage').textContent = message;
+            toast.classList.add('visible');
+
+            if (errorTimeout) clearTimeout(errorTimeout);
+            errorTimeout = setTimeout(() => hideError(), 8000);
+        }
+
+        function hideError() {
+            document.getElementById('errorToast').classList.remove('visible');
+            if (errorTimeout) { clearTimeout(errorTimeout); errorTimeout = null; }
+        }
+
+        function showSuccess(message) {
+            const toast = document.getElementById('errorToast');
+            const icon = toast.querySelector('svg');
+            icon.setAttribute('class', 'w-5 h-5 text-success flex-shrink-0 mt-0.5');
+            icon.innerHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>';
+            toast.style.borderLeftColor = 'hsl(142.1, 76.2%, 36.3%)';
+            toast.style.borderColor = 'hsl(142.1 76.2% 36.3% / 0.3)';
+            document.getElementById('errorToastTitle').textContent = 'Success';
+            document.getElementById('errorToastMessage').textContent = message;
+            toast.classList.add('visible');
+
+            if (errorTimeout) clearTimeout(errorTimeout);
+            errorTimeout = setTimeout(() => {
+                hideError();
+                // Reset to error styling
+                icon.setAttribute('class', 'w-5 h-5 text-destructive flex-shrink-0 mt-0.5');
+                icon.innerHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>';
+                toast.style.borderLeftColor = '';
+                toast.style.borderColor = '';
+            }, 4000);
+        }
 
         const form = document.getElementById('permitForm');
         const formCard = document.getElementById('formCard');
@@ -1101,7 +1329,7 @@
                     throw new Error(result.error || 'Failed to get requirements');
                 }
             } catch (error) {
-                alert('Error: ' + error.message + '\n\nMake sure the backend server is running on port 5001.');
+                showError('Connection Error', error.message + ' — Make sure the backend server is running on port 5001.');
                 formCard.classList.remove('hidden');
                 loading.classList.add('hidden');
             }
@@ -1450,7 +1678,7 @@
 
         function showReportLinkModal() {
             if (!window.currentPaperwork) {
-                alert('No paperwork data available to report');
+                showError('No Data', 'No paperwork data available to report.');
                 return;
             }
 
@@ -1465,7 +1693,7 @@
             // Get the first form as an example (in a real implementation, you'd let user select which form)
             const forms = [...currentPaperwork.applications, ...currentPaperwork.supporting, ...currentPaperwork.feeSchedules];
             if (forms.length === 0) {
-                alert('No forms to report');
+                showError('No Forms', 'No forms available to report.');
                 return;
             }
 
@@ -1487,14 +1715,14 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    alert(`Thank you! Your report (ID: ${data.reportId}) has been submitted. We'll review it within 48 hours.`);
+                    showSuccess(`Report submitted (ID: ${data.reportId}). We'll review it within 48 hours.`);
                 } else {
-                    alert('Failed to submit report. Please try again.');
+                    showError('Submission Failed', 'Could not submit your report. Please try again.');
                 }
             })
             .catch(error => {
                 console.error('Error submitting report:', error);
-                alert('Failed to submit report. Please try again.');
+                showError('Submission Failed', 'Could not submit your report. Please try again.');
             });
         }
 
@@ -1519,7 +1747,7 @@
         function copyTemplate() {
             const content = document.getElementById('modalContent').value;
             navigator.clipboard.writeText(content).then(() => {
-                alert('✓ Template copied to clipboard!');
+                showSuccess('Template copied to clipboard!');
             });
         }
 
@@ -1624,7 +1852,7 @@
                 const text = `Permit Pricing - ${currentData.metadata.jobType} in ${currentData.metadata.location}\n\nRecommended Charge: $${currentData.pricing.summary.recommendedCharge}\nYour Profit: $${currentData.pricing.summary.yourProfit}\nProfit Margin: ${currentData.pricing.summary.profitMargin}%\n\nPermit Fee: $${currentData.pricing.permitFee.permitFee}\nLabor Cost: $${currentData.pricing.labor.laborCost}\nTime Investment: ${currentData.pricing.summary.timeInvestment}\nProcessing Time: ${currentData.pricing.summary.processingTime}`;
 
                 navigator.clipboard.writeText(text).then(() => {
-                    alert('✓ Pricing copied to clipboard!');
+                    showSuccess('Pricing copied to clipboard!');
                 });
             }
         }
@@ -1797,7 +2025,7 @@
                 }
             } catch (error) {
                 console.error('Error loading jurisdictions:', error);
-                alert('Failed to load jurisdictions. Please try again.');
+                showError('Loading Failed', 'Could not load jurisdictions. Please check your connection.');
             }
         }
 
@@ -1838,17 +2066,17 @@
             const jobType = document.getElementById('comparisonJobType').value;
 
             if (!jobType) {
-                alert('Please select a job type');
+                showError('Missing Field', 'Please select a job type for comparison.');
                 return;
             }
 
             if (selectedJurisdictions.length < 2) {
-                alert('Please select at least 2 jurisdictions to compare');
+                showError('Not Enough Cities', 'Please select at least 2 jurisdictions to compare.');
                 return;
             }
 
             if (selectedJurisdictions.length > 5) {
-                alert('Please select no more than 5 jurisdictions');
+                showError('Too Many Cities', 'Please select no more than 5 jurisdictions.');
                 return;
             }
 
@@ -1876,7 +2104,7 @@
                 }
             } catch (error) {
                 console.error('Error comparing jurisdictions:', error);
-                alert('Failed to compare jurisdictions. Please try again.');
+                showError('Comparison Failed', 'Could not compare jurisdictions. Please try again.');
             } finally {
                 compareBtn.disabled = false;
                 compareBtn.innerHTML = originalText;
