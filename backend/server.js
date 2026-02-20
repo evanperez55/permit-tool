@@ -13,6 +13,7 @@ const {
     suggestNearbyJurisdictions,
     calculateOptimalStrategy
 } = require('./jurisdiction-comparison');
+const analytics = require('./analytics');
 require('dotenv').config({ path: '../.env' });
 
 const app = express();
@@ -100,6 +101,8 @@ app.post('/api/check-requirements', async (req, res) => {
         }
 
         const resolvedProjectValue = Number(projectValue) > 0 ? Number(projectValue) : 5000;
+
+        analytics.track({ city, state, jobType });
 
         console.log(`\n📋 Analyzing permit requirements:`);
         console.log(`   Job: ${jobType}`);
@@ -766,6 +769,16 @@ app.post('/api/admin/scrape/:city', async (req, res) => {
     } catch (error) {
         console.error('Error running manual scrape:', error.message);
         res.status(500).json({ error: 'Failed to run scrape', message: error.message });
+    }
+});
+
+// Usage analytics
+app.get('/api/admin/analytics', (req, res) => {
+    try {
+        res.json({ success: true, ...analytics.getSummary() });
+    } catch (error) {
+        console.error('Error getting analytics:', error.message);
+        res.status(500).json({ error: 'Failed to get analytics', message: error.message });
     }
 });
 
