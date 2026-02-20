@@ -18,6 +18,7 @@
     <title>Permit Assistant - Smart Pricing & Requirements for Contractors</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -1041,6 +1042,14 @@
 
     <script>
         const API_BASE = window.PERMIT_API_URL || 'http://localhost:5001';
+
+        // Sanitize HTML to prevent XSS
+        function safeHTML(html) {
+            return DOMPurify.sanitize(html, {
+                ALLOWED_TAGS: ['h1','h2','h3','h4','h5','h6','p','a','ul','ol','li','strong','em','code','pre','br','div','span','table','thead','tbody','tr','th','td','img','svg','path','circle','rect','line','polyline','polygon','g','defs','clipPath','use','label','input','button'],
+                ALLOWED_ATTR: ['href','target','rel','class','style','id','fill','stroke','viewBox','d','stroke-linecap','stroke-linejoin','stroke-width','cx','cy','r','x','y','width','height','fill-rule','clip-rule','xmlns','type','checked','onchange','onclick','value','title','aria-label','aria-expanded','aria-hidden','role','tabindex','data-status']
+            });
+        }
         const API_URL = API_BASE + '/api/check-requirements';
         let currentData = null;
         let currentTemplate = null;
@@ -1387,13 +1396,13 @@
 
             // Cost breakdown
             const costBreakdown = document.getElementById('costBreakdown');
-            costBreakdown.innerHTML = clientExplanation.breakdown.map(item => `
+            costBreakdown.innerHTML = safeHTML(clientExplanation.breakdown.map(item => `
                 <div class="pricing-item">
                     <p class="text-xs text-muted-foreground mb-1">${item.item}</p>
                     <p class="text-lg font-bold text-foreground">$${item.cost}</p>
                     <p class="text-xs text-muted-foreground mt-1">${item.description}</p>
                 </div>
-            `).join('');
+            `).join(''));
 
             // Labor breakdown
             const laborBreakdown = document.getElementById('laborBreakdown');
@@ -1407,7 +1416,7 @@
 
             // Competitive info
             const competitive = document.getElementById('competitiveInfo');
-            competitive.innerHTML = `
+            competitive.innerHTML = safeHTML(`
                 <div class="flex items-center justify-between p-3 bg-destructive/10 rounded-md">
                     <span class="text-sm font-medium">Unlicensed contractor might charge:</span>
                     <span class="font-semibold text-destructive">~$${pricing.competitive.unlicensedContractorPrice}</span>
@@ -1423,7 +1432,7 @@
                 <p class="text-xs text-muted-foreground mt-2">
                     💡 <strong>Your advantage:</strong> ${pricing.competitive.yourAdvantage}
                 </p>
-            `;
+            `);
 
             // Client templates
             const templatesContainer = document.getElementById('clientTemplates');
@@ -1459,7 +1468,7 @@
             }
 
             // Requirements
-            document.getElementById('requirementsContent').innerHTML = marked.parse(requirements);
+            document.getElementById('requirementsContent').innerHTML = safeHTML(marked.parse(requirements));
         }
 
         function displayDataQuality(dataQuality) {
@@ -1497,7 +1506,7 @@
                 badgeColor = 'bg-yellow-100 text-yellow-800 border-yellow-300';
             }
 
-            container.innerHTML = `
+            container.innerHTML = safeHTML(`
                 <div class="${bgColor} border ${borderColor} rounded-lg p-4">
                     <div class="flex items-start gap-3">
                         <div class="${iconColor} flex-shrink-0 mt-0.5">
@@ -1541,7 +1550,7 @@
                         </div>
                     </div>
                 </div>
-            `;
+            `);
         }
 
         async function fetchPaperwork(jurisdiction, jobType) {
@@ -1576,7 +1585,7 @@
 
             // Prep time estimate
             const prepTime = paperwork.estimatedPrepTime;
-            document.getElementById('prepTimeEstimate').innerHTML = `
+            document.getElementById('prepTimeEstimate').innerHTML = safeHTML(`
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-semibold text-foreground mb-1">Estimated Prep Time</p>
@@ -1587,11 +1596,11 @@
                         <p class="text-xs text-muted-foreground">${prepTime.estimatedMinutes} minutes</p>
                     </div>
                 </div>
-            `;
+            `);
 
             // Applications
             if (paperwork.applications.length > 0) {
-                document.getElementById('paperworkApplications').innerHTML = `
+                document.getElementById('paperworkApplications').innerHTML = safeHTML(`
                     <h4 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -1618,12 +1627,12 @@
                             </a>
                         `).join('')}
                     </div>
-                `;
+                `);
             }
 
             // Supporting documents
             if (paperwork.supporting.length > 0) {
-                document.getElementById('paperworkSupporting').innerHTML = `
+                document.getElementById('paperworkSupporting').innerHTML = safeHTML(`
                     <h4 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -1645,12 +1654,12 @@
                             </a>
                         `).join('')}
                     </div>
-                `;
+                `);
             }
 
             // Fee schedules
             if (paperwork.feeSchedules.length > 0) {
-                document.getElementById('paperworkFeeSchedules').innerHTML = `
+                document.getElementById('paperworkFeeSchedules').innerHTML = safeHTML(`
                     <h4 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1673,12 +1682,12 @@
                             </a>
                         `).join('')}
                     </div>
-                `;
+                `);
             }
 
             // Tips
             if (paperwork.tips && paperwork.tips.length > 0) {
-                document.getElementById('paperworkTips').innerHTML = `
+                document.getElementById('paperworkTips').innerHTML = safeHTML(`
                     <h4 class="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -1688,7 +1697,7 @@
                     <ul class="space-y-2 text-sm text-foreground">
                         ${paperwork.tips.map(tip => `<li class="flex items-start gap-2"><span class="text-primary">•</span><span>${tip}</span></li>`).join('')}
                     </ul>
-                `;
+                `);
             }
 
             // Store current paperwork for reporting
@@ -1846,7 +1855,7 @@
             const storageKey = getInspectionStorageKey(location, jobType);
             const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
 
-            container.innerHTML = inspections.map((inspection, i) => {
+            container.innerHTML = safeHTML(inspections.map((inspection, i) => {
                 const checked = saved[i] ? 'checked' : '';
                 const completedClass = saved[i] ? 'bg-success/10 border-success/30' : 'bg-white';
                 return `
@@ -1860,7 +1869,7 @@
                         </div>
                     </label>
                 `;
-            }).join('');
+            }).join(''));
 
             updateInspectionProgress(storageKey, inspections.length);
         }
@@ -2293,7 +2302,7 @@
                 </div>
             `;
 
-            resultsContainer.innerHTML = html;
+            resultsContainer.innerHTML = safeHTML(html);
             resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
         // Register service worker

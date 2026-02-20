@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Permit Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -183,6 +184,14 @@
     <script>
         const API_BASE = window.PERMIT_API_URL || 'http://localhost:5001';
 
+        // Sanitize HTML to prevent XSS
+        function safeHTML(html) {
+            return DOMPurify.sanitize(html, {
+                ALLOWED_TAGS: ['h1','h2','h3','h4','h5','h6','p','a','ul','ol','li','strong','em','code','pre','br','div','span','table','thead','tbody','tr','th','td','svg','path','circle','button','label','input'],
+                ALLOWED_ATTR: ['href','target','rel','class','style','id','fill','stroke','viewBox','d','stroke-linecap','stroke-linejoin','stroke-width','cx','cy','r','width','height','fill-rule','clip-rule','onclick','onchange','type','value','data-status']
+            });
+        }
+
         // ============================================
         // ADMIN API KEY
         // ============================================
@@ -274,7 +283,7 @@
                 document.getElementById('scraperGrid').innerHTML = '<div class="col-span-full text-center text-muted-foreground py-4">No scraper data available</div>';
                 return;
             }
-            document.getElementById('scraperGrid').innerHTML = cities.map(city => {
+            document.getElementById('scraperGrid').innerHTML = safeHTML(cities.map(city => {
                 const statusColor = city.status === 'healthy' ? 'green' : city.status === 'stale' ? 'yellow' : 'red';
                 const trades = city.tradesScraped || [];
                 return `
@@ -292,7 +301,7 @@
                         </div>
                     </div>
                 `;
-            }).join('');
+            }).join(''));
         }
 
         function displayRunHistory(data) {
@@ -301,7 +310,7 @@
                 document.getElementById('runHistory').innerHTML = '<p class="text-muted-foreground text-sm">No run history available</p>';
                 return;
             }
-            document.getElementById('runHistory').innerHTML = `
+            document.getElementById('runHistory').innerHTML = safeHTML(`
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-border text-left">
@@ -322,7 +331,7 @@
                         `).join('')}
                     </tbody>
                 </table>
-            `;
+            `);
         }
 
         function displaySchedulerStatus(data) {
@@ -411,7 +420,7 @@
                 document.getElementById('linkResults').innerHTML = '<p class="text-sm text-muted-foreground">No results available</p>';
                 return;
             }
-            document.getElementById('linkResults').innerHTML = `
+            document.getElementById('linkResults').innerHTML = safeHTML(`
                 <div class="mb-3 flex gap-2">
                     <button onclick="filterLinks('all')" class="text-xs px-2 py-1 rounded border border-border hover:bg-accent transition-colors">All</button>
                     <button onclick="filterLinks('healthy')" class="text-xs px-2 py-1 rounded border border-success/30 text-success hover:bg-success/10 transition-colors">Healthy</button>
@@ -439,7 +448,7 @@
                         }).join('')}
                     </tbody>
                 </table>
-            `;
+            `);
         }
 
         function filterLinks(status) {
@@ -539,7 +548,7 @@
             });
             const tradeList = Array.from(allTrades).sort();
 
-            document.getElementById('coverageMatrix').innerHTML = `
+            document.getElementById('coverageMatrix').innerHTML = safeHTML(`
                 <table class="w-full text-xs border-collapse">
                     <thead>
                         <tr class="border-b border-border">
@@ -559,7 +568,7 @@
                         }).join('')}
                     </tbody>
                 </table>
-            `;
+            `);
         }
 
         function displayOutdatedForms(data) {
@@ -568,7 +577,7 @@
                 document.getElementById('outdatedForms').innerHTML = '<p class="text-sm text-success">All forms are up to date!</p>';
                 return;
             }
-            document.getElementById('outdatedForms').innerHTML = `
+            document.getElementById('outdatedForms').innerHTML = safeHTML(`
                 <div class="space-y-2">
                     ${forms.map(f => `
                         <div class="border border-border rounded-md p-3 flex items-center justify-between">
@@ -580,7 +589,7 @@
                         </div>
                     `).join('')}
                 </div>
-            `;
+            `);
         }
 
         // ============================================
