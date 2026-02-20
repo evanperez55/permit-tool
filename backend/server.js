@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
-const OpenAI = require('openai');
 const { calculateFullPricing, generateClientExplanation } = require('./pricing-calculator');
 const { generateAllClientTemplates } = require('./client-templates');
+const { generateRequirements } = require('./requirements-generator');
 const {
     getSupportedJurisdictions,
     compareJurisdictions,
@@ -16,70 +16,9 @@ require('dotenv').config({ path: '../.env' });
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Initialize OpenAI
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-});
-
 // Middleware
 app.use(cors());
 app.use(express.json());
-
-// System prompt for permit expert AI
-const PERMIT_EXPERT_PROMPT = `You are an expert permit consultant with 20+ years of experience helping contractors navigate building permits across the United States.
-
-Your job is to provide SPECIFIC, ACTIONABLE permit requirements based on the job details provided.
-
-IMPORTANT GUIDELINES:
-1. Be jurisdiction-specific - requirements vary by city/county/state
-2. List EXACT form names and numbers when possible
-3. Provide step-by-step process in chronological order
-4. Include realistic timelines (processing times)
-5. Warn about common rejection reasons for this type of work
-6. Mention required inspections
-7. Estimate costs (permit fees + potential expediter costs)
-8. Always include a disclaimer to verify with local AHJ
-
-OUTPUT FORMAT (use markdown):
-
-## Required Permits
-- List specific permits needed
-- Include permit type codes if applicable
-
-## Forms & Documents Needed
-- Exact form names/numbers
-- Supporting documents (plans, certifications, etc.)
-
-## Step-by-Step Process
-1. First step
-2. Second step
-(etc.)
-
-## Required Inspections
-- List inspections in order
-- When they're needed
-
-## Timeline
-- Estimated processing time
-- Total timeline from submission to approval
-
-## Estimated Costs
-- Permit fees (ranges)
-- Other potential costs
-
-## Common Rejection Reasons
-- Specific issues for this type of work
-- How to avoid them
-
-## Important Notes
-- Jurisdiction-specific requirements
-- Code references
-- Professional certifications needed
-
-## ⚠️ Disclaimer
-Always verify these requirements with your local Authority Having Jurisdiction (AHJ) as requirements can change and vary by specific location.
-
-Be thorough but concise. Contractors need actionable information, not theory.`;
 
 // Main API endpoint
 app.post('/api/check-requirements', async (req, res) => {
@@ -106,30 +45,8 @@ app.post('/api/check-requirements', async (req, res) => {
         console.log(`   Type: ${projectType}`);
         console.log(`   Scope: ${scope}`);
 
-        // Construct user message with job details
-        const userMessage = `
-Job Details:
-- Type of Work: ${jobType}
-- Location: ${city}, ${state}
-- Project Type: ${projectType || 'Not specified'}
-- Scope: ${scope || 'Not specified'}
-- Description: ${description || 'Standard installation/work'}
-
-Please provide specific permit requirements for this job in ${city}, ${state}.
-`;
-
-        // Call OpenAI GPT-4
-        const completion = await openai.chat.completions.create({
-            model: 'gpt-4',
-            messages: [
-                { role: 'system', content: PERMIT_EXPERT_PROMPT },
-                { role: 'user', content: userMessage }
-            ],
-            temperature: 0.3, // Lower temperature for more consistent, factual responses
-            max_tokens: 2000
-        });
-
-        const requirements = completion.choices[0].message.content;
+        // Generate requirements from static data
+        const requirements = generateRequirements({ jobType, city, state, projectType, scope, description });
 
         console.log(`✅ Requirements generated (${requirements.length} chars)`);
 

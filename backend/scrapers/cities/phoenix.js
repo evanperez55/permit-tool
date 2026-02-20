@@ -11,7 +11,8 @@ class PhoenixScraper extends BaseScraper {
         super({
             city: 'Phoenix',
             state: 'AZ',
-            jurisdiction: 'Phoenix, AZ'
+            jurisdiction: 'Phoenix, AZ',
+            browserType: 'firefox' // Firefox handles Phoenix PDF downloads more reliably
         });
         this.pdfParser = new PDFParser();
     }
@@ -28,8 +29,8 @@ class PhoenixScraper extends BaseScraper {
 
             console.log(`📥 Downloading Phoenix Planning & Development fee schedule...`);
 
-            // Download PDF
-            const pdfBuffer = await this.downloadFile(page, pdfLink);
+            // Download PDF with retry (handles 404s and transient failures)
+            const pdfBuffer = await this.retry(() => this.downloadFile(page, pdfLink));
             console.log(`✅ Downloaded ${pdfBuffer.length} bytes`);
 
             // Save PDF

@@ -11,7 +11,8 @@ class MiamiScraper extends BaseScraper {
         super({
             city: 'Miami',
             state: 'FL',
-            jurisdiction: 'Miami, FL'
+            jurisdiction: 'Miami, FL',
+            browserType: 'firefox' // Firefox more reliable for Miami-Dade downloads
         });
 
         this.pdfParser = new PDFParser();
@@ -29,8 +30,8 @@ class MiamiScraper extends BaseScraper {
 
             console.log(`📥 Downloading Miami-Dade electrical fee schedule...`);
 
-            // Download PDF
-            const pdfBuffer = await this.downloadFile(page, pdfLink);
+            // Download PDF with retry (handles transient HTTP errors)
+            const pdfBuffer = await this.retry(() => this.downloadFile(page, pdfLink));
             console.log(`✅ Downloaded ${pdfBuffer.length} bytes`);
 
             // Save PDF

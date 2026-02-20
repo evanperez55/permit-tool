@@ -11,7 +11,8 @@ class SanFranciscoScraper extends BaseScraper {
         super({
             city: 'San Francisco',
             state: 'CA',
-            jurisdiction: 'San Francisco, CA'
+            jurisdiction: 'San Francisco, CA',
+            browserType: 'firefox' // Firefox bypasses SF's bot detection (403 with Chromium)
         });
 
         this.pdfParser = new PDFParser();
@@ -29,8 +30,8 @@ class SanFranciscoScraper extends BaseScraper {
 
             console.log(`📥 Downloading SF electrical permit fee schedule...`);
 
-            // Download PDF
-            const pdfBuffer = await this.downloadFile(page, pdfLink);
+            // Download PDF with retry (handles transient failures)
+            const pdfBuffer = await this.retry(() => this.downloadFile(page, pdfLink));
             console.log(`✅ Downloaded ${pdfBuffer.length} bytes`);
 
             // Save PDF

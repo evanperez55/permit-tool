@@ -1,8 +1,9 @@
 /**
- * API Integration Tests for Non-Paperwork Endpoints
+ * API Integration Tests
  *
- * Tests all HTTP endpoints that weren't previously covered:
+ * Tests all HTTP endpoints:
  * - GET /health
+ * - POST /api/check-requirements
  * - GET /api/jurisdictions
  * - GET /api/verified-cities
  * - GET /api/jurisdictions/nearby/:location
@@ -11,13 +12,13 @@
  * - POST /api/quick-reference
  *
  * Also tests end-to-end workflows combining multiple endpoints.
- * Skips /api/check-requirements since it requires OpenAI API key.
  */
 
 const request = require('supertest');
 const express = require('express');
 const { calculateFullPricing, generateClientExplanation } = require('../pricing-calculator');
 const { generateAllClientTemplates } = require('../client-templates');
+const { generateRequirements } = require('../requirements-generator');
 const {
     getSupportedJurisdictions,
     compareJurisdictions,
@@ -27,7 +28,7 @@ const {
     calculateOptimalStrategy
 } = require('../jurisdiction-comparison');
 
-// Create test app (mirrors server.js routes without OpenAI dependency)
+// Create test app (mirrors server.js routes)
 const app = express();
 app.use(express.json());
 
@@ -38,6 +39,37 @@ app.get('/health', (req, res) => {
         service: 'Permit Assistant API',
         timestamp: new Date().toISOString()
     });
+});
+
+// Check requirements (static - no OpenAI needed)
+app.post('/api/check-requirements', async (req, res) => {
+    try {
+        const { jobType, city, state, projectType, scope, description } = req.body;
+        if (!jobType || !city || !state) {
+            return res.status(400).json({
+                error: 'Missing required fields: jobType, city, and state are required'
+            });
+        }
+        const requirements = generateRequirements({ jobType, city, state, projectType, scope, description });
+        const location = `${city}, ${state}`;
+        const pricingData = calculateFullPricing(location, jobType, 5000);
+        const clientExplanation = generateClientExplanation(pricingData);
+        const fullPricingData = {
+            pricing: pricingData,
+            metadata: { jobType, location, projectType, scope, timestamp: new Date().toISOString() }
+        };
+        const clientTemplates = generateAllClientTemplates(fullPricingData);
+        res.json({
+            success: true,
+            requirements,
+            pricing: pricingData,
+            clientExplanation,
+            clientTemplates,
+            metadata: { jobType, location, projectType, scope, timestamp: new Date().toISOString() }
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to analyze permit requirements', message: error.message });
+    }
 });
 
 // Get all supported jurisdictions
@@ -183,6 +215,98 @@ describe('GET /health', () => {
         expect(res.body.status).toBe('ok');
         expect(res.body.service).toBe('Permit Assistant API');
         expect(res.body.timestamp).toBeDefined();
+    });
+});
+
+describe('POST /api/check-requirements', () => {
+    test('returns requirements for a valid request', async () => {
+        const res = await request(app)
+            .post('/api/check-requirements')
+            .send({ jobType: 'Electrical', city: 'Los Angeles', state: 'CA' });
+        expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
+        expect(typeof res.body.requirements).toBe('string');
+        expect(res.body.requirements.length).toBeGreaterThan(200);
+    });
+
+    test('returns markdown with expected sections', async () => {
+        const res = await request(app)
+            .post('/api/check-requirements')
+            .send({ jobType: 'Electrical', city: 'Los Angeles', state: 'CA' });
+        const md = res.body.requirements;
+        expect(md).toContain('## Required Permits');
+        expect(md).toContain('## Forms & Documents');
+        expect(md).toContain('## Step-by-Step Process');
+        expect(md).toContain('## Required Inspections');
+        expect(md).toContain('## Timeline');
+        expect(md).toContain('## Estimated Costs');
+        expect(md).toContain('## Common Rejection Reasons');
+        expect(md).toContain('## Important Notes');
+        expect(md).toContain('## Disclaimer');
+    });
+
+    test('includes pricing and templates in response', async () => {
+        const res = await request(app)
+            .post('/api/check-requirements')
+            .send({ jobType: 'Plumbing', city: 'Houston', state: 'TX' });
+        expect(res.body.pricing).toBeDefined();
+        expect(res.body.pricing.summary.recommendedCharge).toBeGreaterThan(0);
+        expect(res.body.clientExplanation).toBeDefined();
+        expect(res.body.clientTemplates).toBeDefined();
+        expect(Object.keys(res.body.clientTemplates).length).toBe(5);
+        expect(res.body.metadata).toBeDefined();
+        expect(res.body.metadata.location).toBe('Houston, TX');
+    });
+
+    test('returns 400 when jobType is missing', async () => {
+        const res = await request(app)
+            .post('/api/check-requirements')
+            .send({ city: 'Los Angeles', state: 'CA' });
+        expect(res.status).toBe(400);
+        expect(res.body.error).toContain('Missing required fields');
+    });
+
+    test('returns 400 when city is missing', async () => {
+        const res = await request(app)
+            .post('/api/check-requirements')
+            .send({ jobType: 'Electrical', state: 'CA' });
+        expect(res.status).toBe(400);
+    });
+
+    test('returns 400 when state is missing', async () => {
+        const res = await request(app)
+            .post('/api/check-requirements')
+            .send({ jobType: 'Electrical', city: 'Los Angeles' });
+        expect(res.status).toBe(400);
+    });
+
+    test('works with all major job types', async () => {
+        const jobTypes = ['Electrical Work', 'Plumbing', 'HVAC', 'General Construction', 'Solar Installation'];
+        for (const jobType of jobTypes) {
+            const res = await request(app)
+                .post('/api/check-requirements')
+                .send({ jobType, city: 'Austin', state: 'TX' });
+            expect(res.status).toBe(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.requirements).toContain('## Required Permits');
+        }
+    });
+
+    test('includes form links for cities with paperwork data', async () => {
+        const res = await request(app)
+            .post('/api/check-requirements')
+            .send({ jobType: 'Electrical', city: 'Los Angeles', state: 'CA' });
+        expect(res.body.requirements).toContain('Download');
+        expect(res.body.requirements).toContain('PC-ELEC-APP-02');
+    });
+
+    test('works for cities without specific data (falls back to regional)', async () => {
+        const res = await request(app)
+            .post('/api/check-requirements')
+            .send({ jobType: 'Electrical', city: 'Portland', state: 'OR' });
+        expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
+        expect(res.body.requirements).toContain('## Required Permits');
     });
 });
 
