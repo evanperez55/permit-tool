@@ -74,6 +74,16 @@ class DatabaseLoader {
                         if (scraped.notes) {
                             permitFees[jurisdiction][trade].notes = scraped.notes;
                         }
+
+                        // Post-merge consistency check: if minFee > maxFee,
+                        // the scraper produced bad data. Revert to static values.
+                        const merged = permitFees[jurisdiction][trade];
+                        if (merged.minFee > merged.maxFee) {
+                            const staticTrade = staticDB.permitFees[jurisdiction]?.[trade];
+                            if (staticTrade) {
+                                permitFees[jurisdiction][trade] = { ...staticTrade };
+                            }
+                        }
                     }
                 }
 

@@ -18,12 +18,12 @@ const dataQuality = {
         notes: 'Data verified from official LADBS fee schedule'
     },
     'San Diego, CA': {
-        quality: 'partially-verified',
-        source: 'San Diego County & City Fee Research',
-        lastVerified: '2025-11-16',
+        quality: 'verified',
+        source: 'City of San Diego IB-103 MEP Fee Schedule (Jan 2026)',
+        lastVerified: '2026-02-19',
         url: 'https://www.sandiego.gov/development-services/forms-publications/information-bulletins/103',
-        confidence: 'medium',
-        notes: 'PDF scraper encountered image-based PDF (needs OCR). County data: $373 electrical permit. City fees vary by valuation. Manual verification recommended.'
+        confidence: 'high',
+        notes: 'Per-circuit/per-item fee structure from City of San Diego IB-103. $164.63 base for first 5 circuits or panel upgrade.'
     },
     'San Francisco, CA': {
         quality: 'verified',
@@ -59,11 +59,11 @@ const dataQuality = {
     },
     'Chicago, IL': {
         quality: 'verified',
-        source: 'Chicago Department of Buildings 2025 Permit Fee Tables',
-        lastVerified: '2025-11-16',
+        source: 'Chicago Admin Code 14A-12-1204.2 Stand-Alone Permit Fees',
+        lastVerified: '2026-02-19',
         url: 'https://www.chicago.gov/content/dam/city/depts/bldgs/general/Permitfees/2025%20Bldg%20Permit%20Fee%20Tables.pdf',
         confidence: 'high',
-        notes: 'Data automatically scraped from official 2025 fee schedule. Effective January 1, 2025. PDF hash: 4973bce866b167725bf92811c1ad5c88'
+        notes: 'Flat/tiered fee structure per Chicago Admin Code 14A-12-1204.2. Verified against UpCodes and City of Chicago building permit guides.'
     },
     'Milwaukee, WI': {
         quality: 'verified',
@@ -189,25 +189,25 @@ const permitFees = {
 
     'San Diego, CA': {
         electrical: {
-            baseFee: 373,
+            baseFee: 164.63,
             valuationRate: null,
-            minFee: 373,
+            minFee: 164.63,
             maxFee: 2000,
-            notes: 'Based on San Diego County 2025 electrical permit fee ($373). City fees may vary.'
+            notes: 'City of San Diego IB-103 per-circuit pricing. $164.63 for first 5 circuits or panel upgrade. $48.85 per additional circuit (6-10).'
         },
         plumbing: {
-            baseFee: 373,
+            baseFee: 164.63,
             valuationRate: null,
-            minFee: 373,
+            minFee: 164.63,
             maxFee: 2000,
-            notes: 'Estimated based on electrical permit structure'
+            notes: 'City of San Diego IB-103 MEP fee schedule. $164.63 base for residential plumbing permits.'
         },
         hvac: {
-            baseFee: 373,
+            baseFee: 164.63,
             valuationRate: null,
-            minFee: 373,
+            minFee: 164.63,
             maxFee: 2000,
-            notes: 'Estimated based on electrical permit structure'
+            notes: 'City of San Diego IB-103 MEP fee schedule. $164.63 base for residential mechanical permits.'
         },
         general: {
             baseFee: 180,
@@ -381,25 +381,25 @@ const permitFees = {
     // Illinois
     'Chicago, IL': {
         electrical: {
-            baseFee: 350,
+            baseFee: 150,
             valuationRate: null,
-            minFee: 3550,
-            maxFee: 2400,
-            notes: 'Scraped from 2025 Chicago permit fee tables - complex tiered structure. Base $350, minimum $3,550 for most permits.'
+            minFee: 75,
+            maxFee: 2250,
+            notes: 'Flat/tiered per Chicago Admin Code 14A-12-1204.2. $150 for up to 10 circuits, $75 min for repairs/alterations, up to $2,250 for 81+ circuits.'
         },
         plumbing: {
-            baseFee: 350,
+            baseFee: 150,
             valuationRate: null,
-            minFee: 3550,
-            maxFee: 2400,
-            notes: 'Scraped from 2025 Chicago permit fee tables - same structure as electrical'
+            minFee: 75,
+            maxFee: 400,
+            notes: 'Flat/tiered per Chicago Admin Code 14A-12-1204.2. $75 for water heater replacement, $150 for piping, $400 for pool/hot tub.'
         },
         hvac: {
-            baseFee: null,
+            baseFee: 150,
             valuationRate: null,
-            minFee: 3550,
-            maxFee: 2400,
-            notes: 'Scraped from 2025 Chicago permit fee tables - minimum $3,550 for HVAC permits'
+            minFee: 75,
+            maxFee: 600,
+            notes: 'Flat/tiered per Chicago Admin Code 14A-12-1204.2. $75 for duct/gas piping, $150 for new AC, $600 for chiller/cooling tower.'
         },
         general: {
             baseFee: 190,
@@ -421,11 +421,11 @@ const permitFees = {
     // Wisconsin
     'Milwaukee, WI': {
         electrical: {
-            baseFee: 75,
-            valuationRate: 0.014,  // 1.4% surcharge per Milwaukee ordinance
-            minFee: 75,
+            baseFee: 70,
+            valuationRate: 0.014,  // 1.4% IT & Training surcharge per Milwaukee ordinance Ch. 200-33
+            minFee: 70,
             maxFee: 2000,
-            notes: 'Min $70-80 for single-family + 1.4% surcharge + $5 processing fee'
+            notes: 'Min $70 for 1-2 family homes, $80 for condos + 1.4% surcharge + $5 processing fee. Per Ch. 200-33.'
         },
         plumbing: {
             baseFee: 200,

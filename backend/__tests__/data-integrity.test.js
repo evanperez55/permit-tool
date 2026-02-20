@@ -140,29 +140,26 @@ describe('Fee Data Values', () => {
         });
     });
 
-    // This test documents known data issues that should be investigated
-    describe('Known Data Issues (documenting bugs for fixing)', () => {
-        test('Chicago electrical: minFee ($3550) > maxFee ($2400) - DATA BUG', () => {
+    describe('Previously Fixed Data Issues', () => {
+        test('Chicago electrical: minFee <= maxFee (was previously inverted)', () => {
             const chi = permitFees['Chicago, IL'];
-            // This IS a bug - documenting it. minFee should not exceed maxFee
-            expect(chi.electrical.minFee).toBe(3550);
-            expect(chi.electrical.maxFee).toBe(2400);
-            // Flag: minFee > maxFee
-            expect(chi.electrical.minFee > chi.electrical.maxFee).toBe(true);
+            expect(chi.electrical.minFee).toBeLessThanOrEqual(chi.electrical.maxFee);
+            expect(chi.electrical.minFee).toBe(75);
+            expect(chi.electrical.maxFee).toBe(2250);
         });
 
-        test('Chicago plumbing: minFee ($3550) > maxFee ($2400) - DATA BUG', () => {
+        test('Chicago plumbing: minFee <= maxFee (was previously inverted)', () => {
             const chi = permitFees['Chicago, IL'];
-            expect(chi.plumbing.minFee).toBe(3550);
-            expect(chi.plumbing.maxFee).toBe(2400);
-            expect(chi.plumbing.minFee > chi.plumbing.maxFee).toBe(true);
+            expect(chi.plumbing.minFee).toBeLessThanOrEqual(chi.plumbing.maxFee);
+            expect(chi.plumbing.minFee).toBe(75);
+            expect(chi.plumbing.maxFee).toBe(400);
         });
 
-        test('Chicago hvac: minFee ($3550) > maxFee ($2400) - DATA BUG', () => {
+        test('Chicago hvac: minFee <= maxFee (was previously inverted)', () => {
             const chi = permitFees['Chicago, IL'];
-            expect(chi.hvac.minFee).toBe(3550);
-            expect(chi.hvac.maxFee).toBe(2400);
-            expect(chi.hvac.minFee > chi.hvac.maxFee).toBe(true);
+            expect(chi.hvac.minFee).toBeLessThanOrEqual(chi.hvac.maxFee);
+            expect(chi.hvac.minFee).toBe(75);
+            expect(chi.hvac.maxFee).toBe(600);
         });
 
         test('document cities with null baseFee', () => {
@@ -174,8 +171,7 @@ describe('Fee Data Values', () => {
                     }
                 }
             }
-            // These are known - documenting them
-            expect(nullBaseFees).toContain('Chicago, IL - hvac');
+            // These are known - documenting them (Chicago hvac was fixed)
             expect(nullBaseFees).toContain('Phoenix, AZ - plumbing');
             expect(nullBaseFees).toContain('Phoenix, AZ - hvac');
             expect(nullBaseFees).toContain('New York, NY - electrical');
@@ -203,6 +199,15 @@ describe('Fee Data Values', () => {
                     expect(data.baseFee).not.toBeNull();
                     expect(data.valuationRate).not.toBeNull();
                 }
+            }
+        });
+    });
+
+    describe('minFee must not exceed maxFee', () => {
+        test.each(ALL_FEE_KEYS)('%s - minFee <= maxFee for all trades', (key) => {
+            const data = permitFees[key];
+            for (const trade of TRADE_CATEGORIES) {
+                expect(data[trade].minFee).toBeLessThanOrEqual(data[trade].maxFee);
             }
         });
     });
