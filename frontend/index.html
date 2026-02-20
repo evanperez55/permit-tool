@@ -210,8 +210,8 @@
         }
 
         .badge-warning {
-            background: hsl(38 92% 50% / 0.1);
-            color: hsl(38 92% 30%);
+            background: hsl(38 92% 50% / 0.15);
+            color: hsl(32 90% 26%);
         }
 
         /* Results content styling */
@@ -471,6 +471,19 @@
             transform: scale(1.05);
         }
 
+        /* Screen-reader only utility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
         /* Dark mode card overrides */
         .dark .bg-white {
             background: hsl(var(--card)) !important;
@@ -511,6 +524,7 @@
     </style>
 </head>
 <body class="antialiased">
+    <a href="#permitForm" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-md focus:text-sm focus:font-medium">Skip to main content</a>
     <div class="container mx-auto px-4 py-8 max-w-5xl">
         <!-- Header -->
         <header class="text-center mb-12 animate-fade-in">
@@ -1332,6 +1346,9 @@
                     loading.classList.add('hidden');
                     results.classList.remove('hidden');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                    // Focus the results heading for screen readers
+                    const heading = results.querySelector('h2');
+                    if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); }
                 } else {
                     throw new Error(result.error || 'Failed to get requirements');
                 }
@@ -1734,6 +1751,8 @@
         }
 
         // Template modal functions
+        let lastFocusedElement = null;
+
         function showTemplate(templateKey, templateTitle) {
             if (!currentData || !currentData.clientTemplates) return;
 
@@ -1741,14 +1760,23 @@
             if (!template) return;
 
             currentTemplate = template;
+            lastFocusedElement = document.activeElement;
 
             document.getElementById('modalTitle').textContent = templateTitle;
             document.getElementById('modalContent').value = template.body;
             document.getElementById('templateModal').classList.remove('hidden');
+
+            // Focus the first focusable element in modal
+            setTimeout(() => {
+                const modal = document.getElementById('templateModal');
+                const focusable = modal.querySelectorAll('button, textarea, [tabindex]:not([tabindex="-1"])');
+                if (focusable.length) focusable[0].focus();
+            }, 50);
         }
 
         function closeModal() {
             document.getElementById('templateModal').classList.add('hidden');
+            if (lastFocusedElement) lastFocusedElement.focus();
         }
 
         function copyTemplate() {
@@ -1766,10 +1794,30 @@
             window.location.href = `mailto:?subject=${subject}&body=${body}`;
         }
 
-        // Close modal on escape key
+        // Keyboard handling: Escape closes modal/toast, Tab traps in modal
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                closeModal();
+                const modal = document.getElementById('templateModal');
+                if (!modal.classList.contains('hidden')) {
+                    closeModal();
+                } else {
+                    hideError();
+                }
+            }
+
+            // Focus trap inside modal
+            if (e.key === 'Tab') {
+                const modal = document.getElementById('templateModal');
+                if (modal.classList.contains('hidden')) return;
+                const focusable = modal.querySelectorAll('button, textarea, [tabindex]:not([tabindex="-1"])');
+                if (focusable.length === 0) return;
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (e.shiftKey) {
+                    if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+                } else {
+                    if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+                }
             }
         });
 
@@ -1844,6 +1892,8 @@
             formCard.classList.remove('hidden');
             results.classList.add('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Return focus to the form
+            document.getElementById('jobType').focus();
         }
 
         function emailResults() {
