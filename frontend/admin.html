@@ -126,14 +126,38 @@
                 <div id="linkResults" class="overflow-x-auto"></div>
             </div>
 
-            <!-- Tab 3: Paperwork Stats (added in commit 6) -->
+            <!-- Tab 3: Paperwork Stats -->
             <div id="tab-paperwork" class="tab-content">
-                <div class="text-center py-12 text-muted-foreground">Loading...</div>
+                <h2 class="text-xl font-semibold text-foreground mb-6">Paperwork Database</h2>
+                <div id="paperworkSummaryCards" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="text-center py-8 text-muted-foreground col-span-full"><div class="spinner mx-auto mb-2"></div>Loading...</div>
+                </div>
+                <h3 class="text-lg font-semibold text-foreground mb-4">Coverage Matrix</h3>
+                <div id="coverageMatrix" class="overflow-x-auto mb-6"></div>
+                <h3 class="text-lg font-semibold text-foreground mb-4">Outdated Forms</h3>
+                <div id="outdatedForms"></div>
             </div>
 
-            <!-- Tab 4: Analytics (added in commit 6) -->
+            <!-- Tab 4: Analytics -->
             <div id="tab-analytics" class="tab-content">
-                <div class="text-center py-12 text-muted-foreground">Loading...</div>
+                <h2 class="text-xl font-semibold text-foreground mb-6">Usage Analytics</h2>
+                <div id="analyticsOverview" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    <div class="text-center py-8 text-muted-foreground col-span-full"><div class="spinner mx-auto mb-2"></div>Loading...</div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-foreground mb-4">Top Cities</h3>
+                        <div id="topCitiesChart"></div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-foreground mb-4">Top Job Types</h3>
+                        <div id="topJobTypesChart"></div>
+                    </div>
+                </div>
+                <h3 class="text-lg font-semibold text-foreground mb-4">Hourly Volume</h3>
+                <div id="hourlyVolume" class="mb-6"></div>
+                <h3 class="text-lg font-semibold text-foreground mb-4">Recent Queries</h3>
+                <div id="recentQueries" class="overflow-x-auto"></div>
             </div>
         </div>
     </div>
@@ -416,16 +440,231 @@
         }
 
         // ============================================
-        // PAPERWORK STATS (placeholder - populated in commit 6)
+        // PAPERWORK STATS
         // ============================================
         let paperworkDataLoaded = false;
-        async function loadPaperworkStats() { paperworkDataLoaded = true; }
+
+        async function loadPaperworkStats() {
+            try {
+                const [statsRes, summaryRes, outdatedRes] = await Promise.all([
+                    fetch(API_BASE + '/api/admin/paperwork-stats'),
+                    fetch(API_BASE + '/api/admin/paperwork-summary'),
+                    fetch(API_BASE + '/api/admin/outdated-forms')
+                ]);
+                const stats = await statsRes.json();
+                const summary = await summaryRes.json();
+                const outdated = await outdatedRes.json();
+                paperworkDataLoaded = true;
+
+                displayPaperworkSummary(stats, summary);
+                displayCoverageMatrix(summary);
+                displayOutdatedForms(outdated);
+            } catch (error) {
+                document.getElementById('paperworkSummaryCards').innerHTML = `<div class="col-span-full text-center text-destructive py-4">Failed to load: ${error.message}</div>`;
+            }
+        }
+
+        function displayPaperworkSummary(stats, summary) {
+            const jurisdictions = summary.jurisdictions ? summary.jurisdictions.length : (stats.totalJurisdictions || 0);
+            const totalForms = stats.totalForms || 0;
+            const formTypes = stats.formsByType || {};
+            const typeCount = Object.keys(formTypes).length;
+
+            document.getElementById('paperworkSummaryCards').innerHTML = `
+                <div class="border border-border rounded-lg p-4 text-center">
+                    <p class="text-2xl font-bold text-foreground">${jurisdictions}</p>
+                    <p class="text-xs text-muted-foreground">Jurisdictions</p>
+                </div>
+                <div class="border border-border rounded-lg p-4 text-center">
+                    <p class="text-2xl font-bold text-foreground">${totalForms}</p>
+                    <p class="text-xs text-muted-foreground">Total Forms</p>
+                </div>
+                <div class="border border-border rounded-lg p-4 text-center">
+                    <p class="text-2xl font-bold text-foreground">${typeCount}</p>
+                    <p class="text-xs text-muted-foreground">Form Types</p>
+                </div>
+                <div class="border border-border rounded-lg p-4 text-center">
+                    <p class="text-xs text-muted-foreground mb-1">By Type</p>
+                    ${Object.entries(formTypes).map(([type, count]) =>
+                        `<p class="text-xs"><span class="font-medium text-foreground">${type}:</span> <span class="text-muted-foreground">${count}</span></p>`
+                    ).join('')}
+                </div>
+            `;
+        }
+
+        function displayCoverageMatrix(summary) {
+            const jurisdictions = summary.jurisdictions || [];
+            if (jurisdictions.length === 0) {
+                document.getElementById('coverageMatrix').innerHTML = '<p class="text-sm text-muted-foreground">No coverage data</p>';
+                return;
+            }
+
+            const allTrades = new Set();
+            jurisdictions.forEach(j => {
+                const trades = j.trades || j.jobTypes || [];
+                trades.forEach(t => allTrades.add(t));
+            });
+            const tradeList = Array.from(allTrades).sort();
+
+            document.getElementById('coverageMatrix').innerHTML = `
+                <table class="w-full text-xs border-collapse">
+                    <thead>
+                        <tr class="border-b border-border">
+                            <th class="py-2 pr-3 text-left font-medium text-muted-foreground sticky left-0 bg-white dark:bg-[hsl(var(--card))]">Jurisdiction</th>
+                            ${tradeList.map(t => `<th class="py-2 px-2 text-center font-medium text-muted-foreground">${t}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${jurisdictions.map(j => {
+                            const trades = j.trades || j.jobTypes || [];
+                            return `
+                                <tr class="border-b border-border/50">
+                                    <td class="py-2 pr-3 font-medium text-foreground sticky left-0 bg-white dark:bg-[hsl(var(--card))]">${j.jurisdiction || j.name}</td>
+                                    ${tradeList.map(t => `<td class="py-2 px-2 text-center">${trades.includes(t) ? '<span class="text-success">&#10003;</span>' : '<span class="text-muted-foreground/30">&#8211;</span>'}</td>`).join('')}
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function displayOutdatedForms(data) {
+            const forms = data.forms || [];
+            if (forms.length === 0) {
+                document.getElementById('outdatedForms').innerHTML = '<p class="text-sm text-success">All forms are up to date!</p>';
+                return;
+            }
+            document.getElementById('outdatedForms').innerHTML = `
+                <div class="space-y-2">
+                    ${forms.map(f => `
+                        <div class="border border-border rounded-md p-3 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-foreground">${f.formName || f.name}</p>
+                                <p class="text-xs text-muted-foreground">${f.jurisdiction || ''} &mdash; Last verified: ${f.lastVerified || 'Unknown'}</p>
+                            </div>
+                            ${f.url ? `<a href="${f.url}" target="_blank" rel="noopener noreferrer" class="text-xs text-primary hover:underline">View</a>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
 
         // ============================================
-        // ANALYTICS (placeholder - populated in commit 6)
+        // ANALYTICS
         // ============================================
         let analyticsDataLoaded = false;
-        async function loadAnalytics() { analyticsDataLoaded = true; }
+
+        async function loadAnalytics() {
+            try {
+                const res = await fetch(API_BASE + '/api/admin/analytics');
+                const data = await res.json();
+                analyticsDataLoaded = true;
+                displayAnalytics(data);
+            } catch (error) {
+                document.getElementById('analyticsOverview').innerHTML = `<div class="col-span-full text-center text-destructive py-4">Failed to load: ${error.message}</div>`;
+            }
+        }
+
+        function displayAnalytics(data) {
+            const uptime = data.uptime ? new Date(data.uptime).toLocaleString() : '-';
+            document.getElementById('analyticsOverview').innerHTML = `
+                <div class="border border-border rounded-lg p-4 text-center">
+                    <p class="text-3xl font-bold text-foreground">${data.totalQueries || 0}</p>
+                    <p class="text-xs text-muted-foreground">Total Queries</p>
+                </div>
+                <div class="border border-border rounded-lg p-4 text-center">
+                    <p class="text-3xl font-bold text-foreground">${(data.topCities || []).length}</p>
+                    <p class="text-xs text-muted-foreground">Unique Cities</p>
+                </div>
+                <div class="border border-border rounded-lg p-4 text-center">
+                    <p class="text-sm font-medium text-foreground">${uptime}</p>
+                    <p class="text-xs text-muted-foreground">Server Started</p>
+                </div>
+            `;
+
+            displayBarChart('topCitiesChart', data.topCities || []);
+            displayBarChart('topJobTypesChart', data.topJobTypes || []);
+            displayHourlyVolume(data.hourlyVolume || {});
+            displayRecentQueries(data.recentQueries || []);
+        }
+
+        function displayBarChart(containerId, items) {
+            const container = document.getElementById(containerId);
+            if (items.length === 0) {
+                container.innerHTML = '<p class="text-sm text-muted-foreground">No data yet</p>';
+                return;
+            }
+            const maxCount = Math.max(...items.map(i => i.count));
+            container.innerHTML = `<div class="space-y-2">
+                ${items.map(item => {
+                    const pct = maxCount > 0 ? (item.count / maxCount * 100) : 0;
+                    return `
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-foreground w-32 truncate flex-shrink-0">${item.name}</span>
+                            <div class="flex-1 bg-muted rounded-full h-5 overflow-hidden">
+                                <div class="h-full bg-primary rounded-full transition-all" style="width: ${pct}%"></div>
+                            </div>
+                            <span class="text-xs text-muted-foreground w-8 text-right">${item.count}</span>
+                        </div>
+                    `;
+                }).join('')}
+            </div>`;
+        }
+
+        function displayHourlyVolume(buckets) {
+            const container = document.getElementById('hourlyVolume');
+            const entries = Object.entries(buckets).sort((a, b) => a[0].localeCompare(b[0]));
+            if (entries.length === 0) {
+                container.innerHTML = '<p class="text-sm text-muted-foreground">No data yet</p>';
+                return;
+            }
+            const maxVal = Math.max(...entries.map(e => e[1]));
+            container.innerHTML = `
+                <div class="flex items-end gap-1 h-32 border-b border-border">
+                    ${entries.slice(-24).map(([hour, count]) => {
+                        const pct = maxVal > 0 ? (count / maxVal * 100) : 0;
+                        const label = hour.slice(11, 13) + ':00';
+                        return `
+                            <div class="flex-1 flex flex-col items-center justify-end h-full" title="${hour}: ${count} queries">
+                                <div class="w-full bg-primary rounded-t" style="height: ${pct}%"></div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                <div class="flex gap-1 mt-1">
+                    ${entries.slice(-24).map(([hour]) => `<div class="flex-1 text-center text-[9px] text-muted-foreground">${hour.slice(11, 13)}</div>`).join('')}
+                </div>
+            `;
+        }
+
+        function displayRecentQueries(queries) {
+            const container = document.getElementById('recentQueries');
+            if (queries.length === 0) {
+                container.innerHTML = '<p class="text-sm text-muted-foreground">No queries yet</p>';
+                return;
+            }
+            container.innerHTML = `
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-border text-left">
+                            <th class="pb-2 font-medium text-muted-foreground">Time</th>
+                            <th class="pb-2 font-medium text-muted-foreground">Location</th>
+                            <th class="pb-2 font-medium text-muted-foreground">Job Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${queries.slice(0, 20).map(q => `
+                            <tr class="border-b border-border/50">
+                                <td class="py-2 text-muted-foreground">${new Date(q.timestamp).toLocaleString()}</td>
+                                <td class="py-2 text-foreground">${q.location}</td>
+                                <td class="py-2 text-foreground">${q.jobType}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
 
         // Load initial data
         loadScraperHealth();
