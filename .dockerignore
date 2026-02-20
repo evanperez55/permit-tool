@@ -8,3 +8,4 @@ node_modules
 backend/__tests__
 backend/scrapers/downloads
 backend/fee-schedule-pdfs
+e2e/
