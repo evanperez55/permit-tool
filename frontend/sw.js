@@ -1,9 +1,12 @@
-const CACHE_NAME = 'permit-assistant-v1';
+const CACHE_NAME = 'permit-assistant-v2';
 const SHELL_ASSETS = [
     '/',
     '/index.html',
     '/manifest.json',
-    '/icon.svg'
+    '/icon.svg',
+    '/vendor/tailwind.js',
+    '/vendor/marked.min.js',
+    '/vendor/purify.min.js'
 ];
 
 // Install: cache static shell
