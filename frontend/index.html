@@ -3,6 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Smart pricing and requirements for contractors - know exactly what to charge for permit work across US cities.">
+    <meta name="theme-color" content="#1e293b" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#020817" media="(prefers-color-scheme: dark)">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Permits">
+    <meta property="og:title" content="Permit Assistant">
+    <meta property="og:description" content="Smart pricing and requirements for contractors">
+    <meta property="og:type" content="website">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon.svg">
     <title>Permit Assistant - Smart Pricing & Requirements for Contractors</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -2283,6 +2295,10 @@
 
             resultsContainer.innerHTML = html;
             resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
         }
     </script>
 </body>
