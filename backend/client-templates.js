@@ -277,7 +277,8 @@ function generateComparisonSheet(pricingData, contractorInfo = {}) {
         contractorName = 'Licensed Professional'
     } = contractorInfo;
 
-    const { pricing } = pricingData;
+    // Handle both nested and flat pricing structures
+    const pricing = pricingData.pricing || pricingData;
 
     return {
         title: 'Licensed vs Unlicensed: What You Really Get',

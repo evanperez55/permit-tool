@@ -34,9 +34,10 @@ describe('Pricing Calculator', () => {
             expect(result.summary.recommendedCharge).toBeGreaterThan(0);
         });
 
-        test('should calculate higher fees for New York', () => {
-            const la = calculateFullPricing('Los Angeles, CA', 'Electrical', 5000);
-            const ny = calculateFullPricing('New York, NY', 'Electrical', 5000);
+        test('should calculate higher fees for New York at higher project values', () => {
+            // NY uses a 2.49% valuation rate (no base fee), so it exceeds LA at higher values
+            const la = calculateFullPricing('Los Angeles, CA', 'Electrical', 25000);
+            const ny = calculateFullPricing('New York, NY', 'Electrical', 25000);
 
             expect(ny.permitFee.permitFee).toBeGreaterThan(la.permitFee.permitFee);
         });

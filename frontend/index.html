@@ -288,73 +288,23 @@
                         </select>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="city" class="block text-sm font-medium text-foreground mb-2">
-                                City <span class="text-destructive">*</span>
-                            </label>
-                            <input type="text" id="city" placeholder="e.g., Los Angeles" required class="form-input w-full px-4 py-2.5 border border-input rounded-md bg-background text-foreground">
-                        </div>
-
-                        <div>
-                            <label for="state" class="block text-sm font-medium text-foreground mb-2">
-                                State <span class="text-destructive">*</span>
-                            </label>
-                            <select id="state" required class="form-input w-full px-4 py-2.5 border border-input rounded-md bg-background text-foreground">
-                                <option value="">Select state...</option>
-                                <option value="AL">Alabama</option>
-                                <option value="AK">Alaska</option>
-                                <option value="AZ">Arizona</option>
-                                <option value="AR">Arkansas</option>
-                                <option value="CA">California</option>
-                                <option value="CO">Colorado</option>
-                                <option value="CT">Connecticut</option>
-                                <option value="DE">Delaware</option>
-                                <option value="FL">Florida</option>
-                                <option value="GA">Georgia</option>
-                                <option value="HI">Hawaii</option>
-                                <option value="ID">Idaho</option>
-                                <option value="IL">Illinois</option>
-                                <option value="IN">Indiana</option>
-                                <option value="IA">Iowa</option>
-                                <option value="KS">Kansas</option>
-                                <option value="KY">Kentucky</option>
-                                <option value="LA">Louisiana</option>
-                                <option value="ME">Maine</option>
-                                <option value="MD">Maryland</option>
-                                <option value="MA">Massachusetts</option>
-                                <option value="MI">Michigan</option>
-                                <option value="MN">Minnesota</option>
-                                <option value="MS">Mississippi</option>
-                                <option value="MO">Missouri</option>
-                                <option value="MT">Montana</option>
-                                <option value="NE">Nebraska</option>
-                                <option value="NV">Nevada</option>
-                                <option value="NH">New Hampshire</option>
-                                <option value="NJ">New Jersey</option>
-                                <option value="NM">New Mexico</option>
-                                <option value="NY">New York</option>
-                                <option value="NC">North Carolina</option>
-                                <option value="ND">North Dakota</option>
-                                <option value="OH">Ohio</option>
-                                <option value="OK">Oklahoma</option>
-                                <option value="OR">Oregon</option>
-                                <option value="PA">Pennsylvania</option>
-                                <option value="RI">Rhode Island</option>
-                                <option value="SC">South Carolina</option>
-                                <option value="SD">South Dakota</option>
-                                <option value="TN">Tennessee</option>
-                                <option value="TX">Texas</option>
-                                <option value="UT">Utah</option>
-                                <option value="VT">Vermont</option>
-                                <option value="VA">Virginia</option>
-                                <option value="WA">Washington</option>
-                                <option value="WV">West Virginia</option>
-                                <option value="WI">Wisconsin</option>
-                                <option value="WY">Wyoming</option>
-                            </select>
-                        </div>
+                    <div>
+                        <label for="citySelect" class="block text-sm font-medium text-foreground mb-2">
+                            Select City <span class="text-destructive">*</span>
+                        </label>
+                        <select id="citySelect" required class="form-input w-full px-4 py-2.5 border border-input rounded-md bg-background text-foreground text-base focus:outline-none focus:ring-2 focus:ring-ring">
+                            <option value="">Loading verified cities...</option>
+                        </select>
+                        <p class="text-xs text-muted-foreground mt-2 flex items-start gap-1">
+                            <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                            </svg>
+                            <span>We have verified permit data for <strong id="cityCount">10</strong> major US cities. Don't see your city? <button type="button" onclick="alert('City request feature coming soon! For now, please email requests to support@permitassistant.com')" class="text-primary hover:underline font-medium">Request it here</button></span>
+                        </p>
                     </div>
+                    <!-- Hidden inputs to maintain compatibility with existing form handler -->
+                    <input type="hidden" id="city" value="">
+                    <input type="hidden" id="state" value="">
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -490,6 +440,11 @@
                         <p class="text-muted-foreground text-sm" id="pricingLocation"></p>
                     </div>
                     <span class="badge badge-success">Recommended</span>
+                </div>
+
+                <!-- Data Quality Indicator -->
+                <div id="dataQualityIndicator" class="mb-6">
+                    <!-- Will be populated dynamically -->
                 </div>
 
                 <!-- Big Number Display -->
@@ -684,11 +639,51 @@
         const API_URL = 'http://localhost:5001/api/check-requirements';
         let currentData = null;
         let currentTemplate = null;
+        let verifiedCities = [];
 
         const form = document.getElementById('permitForm');
         const formCard = document.getElementById('formCard');
         const loading = document.getElementById('loading');
         const results = document.getElementById('results');
+
+        // Load verified cities on page load
+        async function loadVerifiedCities() {
+            try {
+                const response = await fetch('http://localhost:5001/api/verified-cities');
+                const data = await response.json();
+
+                if (data.success) {
+                    verifiedCities = data.cities;
+                    const citySelect = document.getElementById('citySelect');
+                    const cityCount = document.getElementById('cityCount');
+
+                    citySelect.innerHTML = '<option value="">Select a city...</option>' +
+                        verifiedCities.map(city =>
+                            `<option value="${city.name}">${city.name}</option>`
+                        ).join('');
+
+                    cityCount.textContent = data.count;
+
+                    // Update hidden inputs when city is selected
+                    citySelect.addEventListener('change', (e) => {
+                        const fullCity = e.target.value;
+                        if (fullCity) {
+                            // Split "City, ST" into city and state
+                            const parts = fullCity.split(', ');
+                            document.getElementById('city').value = parts[0];
+                            document.getElementById('state').value = parts[1] || '';
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load verified cities:', error);
+                const citySelect = document.getElementById('citySelect');
+                citySelect.innerHTML = '<option value="">Error loading cities</option>';
+            }
+        }
+
+        // Load cities when page loads
+        loadVerifiedCities();
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -740,6 +735,9 @@
 
             // Location
             document.getElementById('pricingLocation').textContent = `${metadata.jobType} in ${metadata.location}`;
+
+            // Data Quality Indicator
+            displayDataQuality(pricing.dataQuality);
 
             // Main pricing
             document.getElementById('recommendedCharge').textContent = `$${pricing.summary.recommendedCharge.toLocaleString()}`;
@@ -816,6 +814,88 @@
 
             // Requirements
             document.getElementById('requirementsContent').innerHTML = marked.parse(requirements);
+        }
+
+        function displayDataQuality(dataQuality) {
+            const container = document.getElementById('dataQualityIndicator');
+
+            if (!dataQuality) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const isVerified = dataQuality.quality === 'verified';
+            const isEstimated = dataQuality.quality === 'estimated';
+
+            // Choose colors and icons based on quality level
+            let bgColor, borderColor, iconColor, icon, badgeText, badgeColor;
+
+            if (isVerified) {
+                bgColor = 'bg-green-50';
+                borderColor = 'border-green-200';
+                iconColor = 'text-green-600';
+                icon = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>`;
+                badgeText = '✓ Verified Data';
+                badgeColor = 'bg-green-100 text-green-800 border-green-300';
+            } else {
+                // Estimated - show warning
+                bgColor = 'bg-yellow-50';
+                borderColor = 'border-yellow-200';
+                iconColor = 'text-yellow-600';
+                icon = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>`;
+                badgeText = `⚠ ${dataQuality.confidence === 'medium' ? 'Regional Estimate' : 'Estimated Data'}`;
+                badgeColor = 'bg-yellow-100 text-yellow-800 border-yellow-300';
+            }
+
+            container.innerHTML = `
+                <div class="${bgColor} border ${borderColor} rounded-lg p-4">
+                    <div class="flex items-start gap-3">
+                        <div class="${iconColor} flex-shrink-0 mt-0.5">
+                            ${icon}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${badgeColor}">
+                                    ${badgeText}
+                                </span>
+                                ${dataQuality.confidence ? `<span class="text-xs text-gray-600">Confidence: ${dataQuality.confidence.charAt(0).toUpperCase() + dataQuality.confidence.slice(1)}</span>` : ''}
+                            </div>
+                            <p class="text-sm text-gray-700 font-medium mb-1">
+                                ${isVerified ? `Official data from ${dataQuality.source}` : `${dataQuality.source}`}
+                            </p>
+                            ${dataQuality.lastVerified ? `<p class="text-xs text-gray-600 mb-2">Last verified: ${new Date(dataQuality.lastVerified).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>` : ''}
+                            ${dataQuality.notes ? `
+                                <div class="mt-3 pt-3 border-t ${borderColor}">
+                                    <p class="text-xs text-gray-700">
+                                        <strong>${isVerified ? 'Note:' : '⚠️ Important:'}</strong> ${dataQuality.notes}
+                                    </p>
+                                </div>
+                            ` : ''}
+                            ${isEstimated ? `
+                                <div class="mt-3 pt-3 border-t ${borderColor} bg-yellow-100/50 rounded p-2">
+                                    <p class="text-xs font-semibold text-yellow-900">
+                                        📞 Always verify fees with your local building department before quoting clients.
+                                    </p>
+                                </div>
+                            ` : ''}
+                            ${dataQuality.url ? `
+                                <div class="mt-2">
+                                    <a href="${dataQuality.url}" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1">
+                                        View official source
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         async function fetchPaperwork(jurisdiction, jobType) {

@@ -1,5 +1,10 @@
 # Environment variables
 .env
+.env.*
+
+# Node
+node_modules/
+npm-debug.log*
 
 # Python
 __pycache__/
@@ -7,10 +12,25 @@ __pycache__/
 *$py.class
 *.so
 .Python
+venv/
+env/
+
+# Large binary / model files
+*.traineddata
+
+# Downloaded PDFs and scraper runtime outputs
+backend/fee-schedule-pdfs/
+backend/scrapers/downloads/
+backend/scrapers/orchestrator-output.log
+
+# Backup files
+*.backup-*.js
 
 # Research outputs
 permit-research-results.json
 
-# Virtual environment
-venv/
-env/
+# Windows artifacts
+NUL
+
+# Claude session artifacts
+.claude/

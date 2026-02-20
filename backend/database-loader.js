@@ -20,46 +20,76 @@ class DatabaseLoader {
     }
 
     /**
-     * Load latest scraper results and convert to database format
+     * Load latest scraper results and merge into static database.
+     * Scraper results overlay the static data - static DB is the base,
+     * scraped values update individual trade fields where available.
      */
     loadFromScraperResults() {
         try {
+            // Start with a deep copy of the static database as the base
+            const permitFees = JSON.parse(JSON.stringify(staticDB.permitFees));
+            const dataQuality = JSON.parse(JSON.stringify(staticDB.dataQuality));
+
             // Check if history file exists
             if (!fs.existsSync(this.historyFile)) {
                 console.log('ℹ️  No scraper history found, using static database');
-                return this.convertStaticDB();
+                return { permitFees, dataQuality };
             }
 
             // Load history
             const historyData = fs.readFileSync(this.historyFile, 'utf8');
             const history = JSON.parse(historyData);
 
-            // Convert to database format
-            const permitFees = {};
-            const dataQuality = {};
-
+            // Merge scraper results into static database with validation.
+            // Only overwrite static values when scraper provides plausible data.
             for (const [jurisdiction, feeData] of Object.entries(history)) {
-                // Convert fees to old format
-                permitFees[jurisdiction] = {
-                    electrical: feeData.electrical?.baseFee || null,
-                    plumbing: feeData.plumbing?.baseFee || null,
-                    hvac: feeData.hvac?.baseFee || null,
-                    // Store raw data for advanced calculations
-                    _rawData: {
-                        electrical: feeData.electrical,
-                        plumbing: feeData.plumbing,
-                        hvac: feeData.hvac
+                // Only update existing jurisdictions - don't add new incomplete entries
+                if (!permitFees[jurisdiction]) {
+                    continue;
+                }
+
+                // Update individual trade fields if scraper has them
+                const trades = ['electrical', 'plumbing', 'hvac'];
+                for (const trade of trades) {
+                    if (feeData[trade] && permitFees[jurisdiction][trade]) {
+                        const existing = permitFees[jurisdiction][trade];
+                        const scraped = feeData[trade];
+
+                        // Only merge non-null values that pass sanity checks
+                        if (scraped.baseFee != null && scraped.baseFee >= 0) {
+                            permitFees[jurisdiction][trade].baseFee = scraped.baseFee;
+                        }
+                        // valuationRate must be reasonable (under 10%)
+                        if (scraped.valuationRate != null && scraped.valuationRate >= 0 && scraped.valuationRate < 0.1) {
+                            permitFees[jurisdiction][trade].valuationRate = scraped.valuationRate;
+                        }
+                        // minFee: only overwrite if scraped value is plausible (>= $10)
+                        if (scraped.minFee != null && scraped.minFee >= 10) {
+                            permitFees[jurisdiction][trade].minFee = scraped.minFee;
+                        }
+                        // maxFee: never overwrite with null, and must be > minFee
+                        if (scraped.maxFee != null && scraped.maxFee > 0) {
+                            permitFees[jurisdiction][trade].maxFee = scraped.maxFee;
+                        }
+                        if (scraped.notes) {
+                            permitFees[jurisdiction][trade].notes = scraped.notes;
+                        }
                     }
+                }
+
+                // Store raw scraper data for reference/debugging
+                permitFees[jurisdiction]._rawScraperData = {
+                    electrical: feeData.electrical,
+                    plumbing: feeData.plumbing,
+                    hvac: feeData.hvac
                 };
 
-                // Generate data quality metadata
+                // Update data quality metadata (preserve existing where scraper lacks info)
                 dataQuality[jurisdiction] = {
-                    quality: 'verified',
-                    source: feeData.source || 'Automated Scraper',
-                    lastVerified: feeData.scrapedAt ? feeData.scrapedAt.split('T')[0] : new Date().toISOString().split('T')[0],
-                    url: feeData.sourceUrl || null,
-                    confidence: 'high',
-                    notes: `Data automatically scraped. PDF hash: ${feeData.pdfHash?.substring(0, 16)}...`,
+                    ...dataQuality[jurisdiction],
+                    source: feeData.source || dataQuality[jurisdiction]?.source || 'Automated Scraper',
+                    lastVerified: feeData.scrapedAt ? feeData.scrapedAt.split('T')[0] : dataQuality[jurisdiction]?.lastVerified,
+                    url: feeData.sourceUrl || dataQuality[jurisdiction]?.url || null,
                     pdfHash: feeData.pdfHash,
                     effectiveDate: feeData.effectiveDate
                 };
