@@ -721,3 +721,62 @@ describe('End-to-End Pricing Pipeline', () => {
         }
     });
 });
+
+// ========================================================================
+// SCRAPER MERGE INTEGRITY
+// Ensures the database-loader does not corrupt curated data with bad scraper values
+// ========================================================================
+describe('Scraper Merge Integrity', () => {
+    const staticDB = require('../permit-fee-database');
+    const { clearCache } = require('../database-loader');
+
+    beforeAll(() => {
+        clearCache();
+    });
+
+    const mergedDB = require('../database-loader');
+    const trades = ['electrical', 'plumbing', 'hvac'];
+
+    test.each(NAMED_CITIES)('%s: merged fees should not deviate from curated static data', (city) => {
+        for (const trade of trades) {
+            const staticTrade = staticDB.permitFees[city]?.[trade];
+            const mergedTrade = mergedDB.permitFees[city]?.[trade];
+
+            if (!staticTrade || !mergedTrade) continue;
+
+            // baseFee must match static (or be null in static)
+            if (staticTrade.baseFee != null) {
+                expect(mergedTrade.baseFee).toBe(staticTrade.baseFee);
+            }
+            // valuationRate must match static
+            if (staticTrade.valuationRate != null) {
+                expect(mergedTrade.valuationRate).toBe(staticTrade.valuationRate);
+            }
+            // minFee must match static
+            if (staticTrade.minFee != null) {
+                expect(mergedTrade.minFee).toBe(staticTrade.minFee);
+            }
+            // maxFee must match static
+            if (staticTrade.maxFee != null) {
+                expect(mergedTrade.maxFee).toBe(staticTrade.maxFee);
+            }
+        }
+    });
+
+    test('merged database should have all the same cities as static database', () => {
+        for (const city of NAMED_CITIES) {
+            expect(mergedDB.permitFees[city]).toBeDefined();
+        }
+    });
+
+    test('minFee should never exceed maxFee after merge', () => {
+        for (const city of NAMED_CITIES) {
+            for (const trade of trades) {
+                const t = mergedDB.permitFees[city]?.[trade];
+                if (t && t.minFee != null && t.maxFee != null) {
+                    expect(t.minFee).toBeLessThanOrEqual(t.maxFee);
+                }
+            }
+        }
+    });
+});

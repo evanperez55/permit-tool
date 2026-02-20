@@ -56,20 +56,34 @@ class DatabaseLoader {
                         const scraped = feeData[trade];
 
                         // Only merge non-null values that pass sanity checks
-                        if (scraped.baseFee != null && scraped.baseFee >= 0) {
-                            permitFees[jurisdiction][trade].baseFee = scraped.baseFee;
+                        // AND don't deviate too far from curated values
+                        const curated = existing;
+
+                        if (scraped.baseFee != null && scraped.baseFee > 0) {
+                            // Reject if >10% deviation from curated value (when curated exists)
+                            if (curated.baseFee == null || this._withinDeviation(scraped.baseFee, curated.baseFee, 0.1)) {
+                                permitFees[jurisdiction][trade].baseFee = scraped.baseFee;
+                            }
                         }
-                        // valuationRate must be reasonable (under 10%)
+                        // valuationRate must be reasonable (under 10%) and close to curated
                         if (scraped.valuationRate != null && scraped.valuationRate >= 0 && scraped.valuationRate < 0.1) {
-                            permitFees[jurisdiction][trade].valuationRate = scraped.valuationRate;
+                            // Round to 6 decimal places to avoid floating point noise
+                            const rounded = Math.round(scraped.valuationRate * 1e6) / 1e6;
+                            if (curated.valuationRate == null || this._withinDeviation(rounded, curated.valuationRate, 0.1)) {
+                                permitFees[jurisdiction][trade].valuationRate = rounded;
+                            }
                         }
                         // minFee: only overwrite if scraped value is plausible (>= $10)
                         if (scraped.minFee != null && scraped.minFee >= 10) {
-                            permitFees[jurisdiction][trade].minFee = scraped.minFee;
+                            if (curated.minFee == null || this._withinDeviation(scraped.minFee, curated.minFee, 0.1)) {
+                                permitFees[jurisdiction][trade].minFee = scraped.minFee;
+                            }
                         }
-                        // maxFee: never overwrite with null, and must be > minFee
+                        // maxFee: never overwrite with null, and must be > 0
                         if (scraped.maxFee != null && scraped.maxFee > 0) {
-                            permitFees[jurisdiction][trade].maxFee = scraped.maxFee;
+                            if (curated.maxFee == null || this._withinDeviation(scraped.maxFee, curated.maxFee, 0.1)) {
+                                permitFees[jurisdiction][trade].maxFee = scraped.maxFee;
+                            }
                         }
                         if (scraped.notes) {
                             permitFees[jurisdiction][trade].notes = scraped.notes;
@@ -160,6 +174,16 @@ class DatabaseLoader {
         this.cacheTimestamp = now;
 
         return data.dataQuality;
+    }
+
+    /**
+     * Check if a scraped value is within acceptable deviation of a curated value.
+     * Returns true if the values are close enough to allow the merge.
+     */
+    _withinDeviation(scraped, curated, maxDeviation) {
+        if (curated === 0) return scraped === 0;
+        const deviation = Math.abs(scraped - curated) / Math.abs(curated);
+        return deviation <= maxDeviation;
     }
 
     /**
