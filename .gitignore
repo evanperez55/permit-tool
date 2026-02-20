@@ -33,5 +33,8 @@ permit-research-results.json
 # Windows artifacts
 NUL
 
+# Analytics data
+analytics-data.json
+
 # Claude session artifacts
 .claude/
