@@ -17,6 +17,36 @@
  * - isFillable: Whether it's a fillable PDF
  * - fileType: pdf, docx, html
  * - notes: Any additional information
+ *
+ * ============================================================
+ * HOW TO ADD A NEW CITY
+ * ============================================================
+ *
+ * Copy the template below and add it inside the permitPaperwork object.
+ * Run `npx jest __tests__/data-integrity.test.js` to validate your entry.
+ *
+ * 'City Name, ST': {
+ *   'Electrical': [
+ *     {
+ *       formType: 'Application',           // Required: Application | Supporting | Reference | Fee Schedule
+ *       formName: 'Electrical Permit App',  // Required: official form name
+ *       formCode: 'FORM-001',              // Required: form number/code
+ *       url: 'https://...',                 // Required: direct URL to form
+ *       description: 'Primary application', // Required: what it's for
+ *       revisionDate: '2024-01-15',         // Optional: YYYY-MM-DD
+ *       lastVerified: '2025-01-15',         // Required: YYYY-MM-DD when you checked the link
+ *       isFillable: true,                   // Required: boolean
+ *       fileType: 'pdf',                    // Required: pdf | docx | html
+ *       notes: 'Additional info'            // Optional: string
+ *     }
+ *   ],
+ *   'Plumbing': [ ... ],
+ *   'HVAC': [ ... ]
+ * },
+ *
+ * Allowed formType values: Application, Supporting, Reference, Fee Schedule
+ * Allowed fileType values: pdf, docx, html
+ * ============================================================
  */
 
 const permitPaperwork = {

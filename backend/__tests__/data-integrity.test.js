@@ -514,7 +514,7 @@ describe('Paperwork Database Structure', () => {
                 expect(typeof form.lastVerified).toBe('string');
                 expect(typeof form.isFillable).toBe('boolean');
                 expect(typeof form.fileType).toBe('string');
-                expect(['pdf', 'html']).toContain(form.fileType);
+                expect(['pdf', 'html', 'docx']).toContain(form.fileType);
             }
         }
     });
@@ -578,6 +578,32 @@ describe('Paperwork URL Validation', () => {
                     // Dates should be parseable
                     expect(new Date(form.revisionDate).toString()).not.toBe('Invalid Date');
                     expect(new Date(form.lastVerified).toString()).not.toBe('Invalid Date');
+                }
+            }
+        }
+    });
+
+    test('lastVerified dates are not in the future', () => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        for (const city of PAPERWORK_CITIES) {
+            const trades = Object.keys(permitPaperwork[city]);
+            for (const trade of trades) {
+                for (const form of permitPaperwork[city][trade]) {
+                    if (form.lastVerified) {
+                        expect(new Date(form.lastVerified) <= tomorrow).toBe(true);
+                    }
+                }
+            }
+        }
+    });
+
+    test('all forms have non-empty descriptions', () => {
+        for (const city of PAPERWORK_CITIES) {
+            const trades = Object.keys(permitPaperwork[city]);
+            for (const trade of trades) {
+                for (const form of permitPaperwork[city][trade]) {
+                    expect(form.description.trim().length).toBeGreaterThan(0);
                 }
             }
         }
