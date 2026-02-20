@@ -1014,7 +1014,8 @@
     </button>
 
     <script>
-        const API_URL = 'http://localhost:5001/api/check-requirements';
+        const API_BASE = window.PERMIT_API_URL || 'http://localhost:5001';
+        const API_URL = API_BASE + '/api/check-requirements';
         let currentData = null;
         let currentTemplate = null;
         let verifiedCities = [];
@@ -1117,7 +1118,7 @@
         // Load verified cities on page load
         async function loadVerifiedCities() {
             try {
-                const response = await fetch('http://localhost:5001/api/verified-cities');
+                const response = await fetch(API_BASE + '/api/verified-cities');
                 const data = await response.json();
 
                 if (data.success) {
@@ -1510,7 +1511,7 @@
 
         async function fetchPaperwork(jurisdiction, jobType) {
             try {
-                const response = await fetch('http://localhost:5001/api/complete-paperwork-package', {
+                const response = await fetch(API_BASE + '/api/complete-paperwork-package', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ jurisdiction, jobType })
@@ -1699,7 +1700,7 @@
 
             const form = forms[0];
 
-            fetch('http://localhost:5001/api/report-broken-link', {
+            fetch(API_BASE + '/api/report-broken-link', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -2016,7 +2017,7 @@
         // Load available jurisdictions from API
         async function loadJurisdictions() {
             try {
-                const response = await fetch('http://localhost:5001/api/jurisdictions');
+                const response = await fetch(API_BASE + '/api/jurisdictions');
                 const data = await response.json();
 
                 if (data.success) {
@@ -2086,7 +2087,7 @@
             compareBtn.innerHTML = '<div class="inline-block spinner" style="width:20px;height:20px;border-width:2px;"></div><span class="ml-2">Comparing...</span>';
 
             try {
-                const response = await fetch('http://localhost:5001/api/compare-jurisdictions', {
+                const response = await fetch(API_BASE + '/api/compare-jurisdictions', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

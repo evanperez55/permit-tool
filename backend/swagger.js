@@ -12,7 +12,7 @@ const options = {
             description: 'API for permit pricing, requirements, paperwork, and jurisdiction comparison',
             contact: { name: 'Permit Assistant', email: 'support@permitassistant.com' }
         },
-        servers: [{ url: 'http://localhost:5001', description: 'Development' }],
+        servers: [{ url: process.env.API_URL || 'http://localhost:5001', description: process.env.NODE_ENV === 'production' ? 'Production' : 'Development' }],
         tags: [
             { name: 'Permits', description: 'Permit pricing and requirements' },
             { name: 'Paperwork', description: 'Permit forms and documents' },
