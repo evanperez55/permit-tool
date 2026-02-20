@@ -14,6 +14,7 @@ const {
     calculateOptimalStrategy
 } = require('./jurisdiction-comparison');
 const analytics = require('./analytics');
+const adminAuth = require('./middleware/admin-auth');
 require('dotenv').config({ path: '../.env' });
 
 const app = express();
@@ -24,7 +25,7 @@ const corsOrigins = process.env.CORS_ORIGINS;
 app.use(cors(corsOrigins ? {
     origin: corsOrigins.split(',').map(o => o.trim()),
     methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type']
+    allowedHeaders: ['Content-Type', 'X-API-Key']
 } : undefined));
 app.use(express.json());
 
@@ -574,6 +575,9 @@ app.post('/api/report-broken-link', (req, res) => {
         });
     }
 });
+
+// Admin authentication - protect all /api/admin routes
+app.use('/api/admin', adminAuth);
 
 // Get database statistics (admin)
 app.get('/api/admin/paperwork-stats', (req, res) => {

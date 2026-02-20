@@ -76,9 +76,17 @@
                         <a href="/" class="hover:text-primary transition-colors">Permit Assistant</a> &mdash; System monitoring and management
                     </p>
                 </div>
-                <a href="/" class="text-sm text-muted-foreground hover:text-primary transition-colors border border-border rounded-md px-3 py-1.5">
-                    &larr; Back to App
-                </a>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <label for="apiKeyInput" class="text-xs text-muted-foreground whitespace-nowrap">API Key:</label>
+                        <input type="password" id="apiKeyInput" placeholder="Enter admin key"
+                            class="text-sm border border-border rounded-md px-2 py-1 bg-background text-foreground w-36 focus:outline-none focus:ring-2 focus:ring-ring"
+                            oninput="saveAdminKey(this.value)" />
+                    </div>
+                    <a href="/" class="text-sm text-muted-foreground hover:text-primary transition-colors border border-border rounded-md px-3 py-1.5">
+                        &larr; Back to App
+                    </a>
+                </div>
             </div>
         </header>
 
@@ -176,6 +184,31 @@
         const API_BASE = window.PERMIT_API_URL || 'http://localhost:5001';
 
         // ============================================
+        // ADMIN API KEY
+        // ============================================
+        function getAdminKey() {
+            return localStorage.getItem('permit-admin-api-key') || '';
+        }
+        function saveAdminKey(key) {
+            localStorage.setItem('permit-admin-api-key', key);
+        }
+        function adminHeaders(extra = {}) {
+            const key = getAdminKey();
+            const headers = { ...extra };
+            if (key) headers['X-API-Key'] = key;
+            return headers;
+        }
+        function adminFetch(url, opts = {}) {
+            opts.headers = adminHeaders(opts.headers || {});
+            return fetch(url, opts);
+        }
+        // Restore saved key on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('apiKeyInput');
+            if (input) input.value = getAdminKey();
+        });
+
+        // ============================================
         // DARK MODE
         // ============================================
         function getThemePreference() {
@@ -219,9 +252,9 @@
         async function loadScraperHealth() {
             try {
                 const [healthRes, runsRes, schedRes] = await Promise.all([
-                    fetch(API_BASE + '/api/admin/scraper-health'),
-                    fetch(API_BASE + '/api/admin/scraper-runs'),
-                    fetch(API_BASE + '/api/admin/scheduler')
+                    adminFetch(API_BASE + '/api/admin/scraper-health'),
+                    adminFetch(API_BASE + '/api/admin/scraper-runs'),
+                    adminFetch(API_BASE + '/api/admin/scheduler')
                 ]);
                 const health = await healthRes.json();
                 const runs = await runsRes.json();
@@ -305,7 +338,7 @@
 
         async function startScheduler() {
             try {
-                const res = await fetch(API_BASE + '/api/admin/scheduler/start', { method: 'POST' });
+                const res = await adminFetch(API_BASE + '/api/admin/scheduler/start', { method: 'POST' });
                 const data = await res.json();
                 displaySchedulerStatus(data);
             } catch (e) { console.error('Failed to start scheduler:', e); }
@@ -313,7 +346,7 @@
 
         async function stopScheduler() {
             try {
-                const res = await fetch(API_BASE + '/api/admin/scheduler/stop', { method: 'POST' });
+                const res = await adminFetch(API_BASE + '/api/admin/scheduler/stop', { method: 'POST' });
                 const data = await res.json();
                 displaySchedulerStatus(data);
             } catch (e) { console.error('Failed to stop scheduler:', e); }
@@ -321,7 +354,7 @@
 
         async function runScrape(city) {
             try {
-                const res = await fetch(API_BASE + '/api/admin/scrape/' + encodeURIComponent(city), { method: 'POST' });
+                const res = await adminFetch(API_BASE + '/api/admin/scrape/' + encodeURIComponent(city), { method: 'POST' });
                 const data = await res.json();
                 alert(data.success ? `Scrape complete for ${city}` : `Scrape failed: ${data.message || 'Unknown error'}`);
                 loadScraperHealth();
@@ -337,7 +370,7 @@
 
         async function loadLinkCheck() {
             try {
-                const res = await fetch(API_BASE + '/api/admin/link-check');
+                const res = await adminFetch(API_BASE + '/api/admin/link-check');
                 const data = await res.json();
                 linkDataLoaded = true;
                 displayLinkSummary(data);
@@ -420,7 +453,7 @@
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner mr-2"></span>Checking...';
             try {
-                const res = await fetch(API_BASE + '/api/admin/link-check/full');
+                const res = await adminFetch(API_BASE + '/api/admin/link-check/full');
                 const data = await res.json();
                 if (data.summary) {
                     displayLinkSummary({
@@ -447,9 +480,9 @@
         async function loadPaperworkStats() {
             try {
                 const [statsRes, summaryRes, outdatedRes] = await Promise.all([
-                    fetch(API_BASE + '/api/admin/paperwork-stats'),
-                    fetch(API_BASE + '/api/admin/paperwork-summary'),
-                    fetch(API_BASE + '/api/admin/outdated-forms')
+                    adminFetch(API_BASE + '/api/admin/paperwork-stats'),
+                    adminFetch(API_BASE + '/api/admin/paperwork-summary'),
+                    adminFetch(API_BASE + '/api/admin/outdated-forms')
                 ]);
                 const stats = await statsRes.json();
                 const summary = await summaryRes.json();
@@ -557,7 +590,7 @@
 
         async function loadAnalytics() {
             try {
-                const res = await fetch(API_BASE + '/api/admin/analytics');
+                const res = await adminFetch(API_BASE + '/api/admin/analytics');
                 const data = await res.json();
                 analyticsDataLoaded = true;
                 displayAnalytics(data);
