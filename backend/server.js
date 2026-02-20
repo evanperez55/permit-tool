@@ -46,8 +46,6 @@ function rateLimiter(req, res, next) {
     next();
 }
 
-app.use('/api/', rateLimiter);
-
 // In-memory response cache for GET endpoints
 const responseCache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -66,9 +64,6 @@ function cacheMiddleware(req, res, next) {
     next();
 }
 
-const cachedPaths = ['/api/jurisdictions', '/api/verified-cities', '/api/paperwork-jurisdictions'];
-cachedPaths.forEach(path => app.use(path, cacheMiddleware));
-
 // Serve frontend static files in production
 if (process.env.NODE_ENV === 'production') {
     const path = require('path');
@@ -81,8 +76,21 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
     customSiteTitle: 'Permit Assistant API Docs'
 }));
 
+// ===================================================================
+// API ROUTER - all routes mounted at /api and /api/v1
+// ===================================================================
+
+const apiRouter = express.Router();
+
+// Cache middleware for specific paths within router
+const cachedPaths = ['/jurisdictions', '/verified-cities', '/paperwork-jurisdictions'];
+cachedPaths.forEach(p => apiRouter.use(p, cacheMiddleware));
+
+// Admin authentication
+apiRouter.use('/admin', adminAuth);
+
 // Main API endpoint
-app.post('/api/check-requirements', async (req, res) => {
+apiRouter.post('/check-requirements', async (req, res) => {
     try {
         const {
             jobType,
@@ -168,7 +176,7 @@ app.post('/api/check-requirements', async (req, res) => {
 // Jurisdiction comparison endpoints
 
 // Get all supported jurisdictions
-app.get('/api/jurisdictions', (req, res) => {
+apiRouter.get('/jurisdictions', (req, res) => {
     try {
         const jurisdictions = getSupportedJurisdictions();
         console.log(`📍 Retrieved ${jurisdictions.length} supported jurisdictions`);
@@ -188,7 +196,7 @@ app.get('/api/jurisdictions', (req, res) => {
 });
 
 // Get only verified cities (for limiting user selection)
-app.get('/api/verified-cities', (req, res) => {
+apiRouter.get('/verified-cities', (req, res) => {
     try {
         const { dataQuality } = require('./database-loader');
 
@@ -219,7 +227,7 @@ app.get('/api/verified-cities', (req, res) => {
 });
 
 // Get nearby jurisdiction suggestions
-app.get('/api/jurisdictions/nearby/:location', (req, res) => {
+apiRouter.get('/jurisdictions/nearby/:location', (req, res) => {
     try {
         const location = decodeURIComponent(req.params.location);
         const nearby = suggestNearbyJurisdictions(location);
@@ -242,7 +250,7 @@ app.get('/api/jurisdictions/nearby/:location', (req, res) => {
 });
 
 // Compare multiple jurisdictions
-app.post('/api/compare-jurisdictions', (req, res) => {
+apiRouter.post('/compare-jurisdictions', (req, res) => {
     try {
         const { jurisdictions, jobType } = req.body;
 
@@ -290,7 +298,7 @@ app.post('/api/compare-jurisdictions', (req, res) => {
 });
 
 // Calculate optimal pricing strategy
-app.post('/api/jurisdiction-strategy', (req, res) => {
+apiRouter.post('/jurisdiction-strategy', (req, res) => {
     try {
         const { jurisdictions, jobType } = req.body;
 
@@ -336,7 +344,7 @@ app.post('/api/jurisdiction-strategy', (req, res) => {
 });
 
 // Generate quick reference guide
-app.post('/api/quick-reference', (req, res) => {
+apiRouter.post('/quick-reference', (req, res) => {
     try {
         const { jurisdictions, jobTypes } = req.body;
 
@@ -386,7 +394,7 @@ app.post('/api/quick-reference', (req, res) => {
 const permitPaperwork = require('./permit-paperwork');
 
 // Get required paperwork for a specific permit
-app.post('/api/required-paperwork', (req, res) => {
+apiRouter.post('/required-paperwork', (req, res) => {
     try {
         const { jurisdiction, jobType } = req.body;
 
@@ -411,7 +419,7 @@ app.post('/api/required-paperwork', (req, res) => {
 });
 
 // Get complete paperwork package with checklist and tips
-app.post('/api/complete-paperwork-package', (req, res) => {
+apiRouter.post('/complete-paperwork-package', (req, res) => {
     try {
         const { jurisdiction, jobType } = req.body;
 
@@ -435,7 +443,7 @@ app.post('/api/complete-paperwork-package', (req, res) => {
 });
 
 // Check if paperwork data exists for a jurisdiction/job type
-app.get('/api/paperwork-available/:jurisdiction/:jobType', (req, res) => {
+apiRouter.get('/paperwork-available/:jurisdiction/:jobType', (req, res) => {
     try {
         const { jurisdiction, jobType } = req.params;
 
@@ -459,7 +467,7 @@ app.get('/api/paperwork-available/:jurisdiction/:jobType', (req, res) => {
 });
 
 // Get a specific form by code
-app.get('/api/form/:jurisdiction/:formCode', (req, res) => {
+apiRouter.get('/form/:jurisdiction/:formCode', (req, res) => {
     try {
         const { jurisdiction, formCode } = req.params;
 
@@ -486,7 +494,7 @@ app.get('/api/form/:jurisdiction/:formCode', (req, res) => {
 });
 
 // Search for forms by keyword
-app.get('/api/search-forms/:keyword', (req, res) => {
+apiRouter.get('/search-forms/:keyword', (req, res) => {
     try {
         const { keyword } = req.params;
 
@@ -514,7 +522,7 @@ app.get('/api/search-forms/:keyword', (req, res) => {
 });
 
 // Get all forms of a specific type
-app.get('/api/forms-by-type/:formType', (req, res) => {
+apiRouter.get('/forms-by-type/:formType', (req, res) => {
     try {
         const { formType } = req.params;
 
@@ -535,7 +543,7 @@ app.get('/api/forms-by-type/:formType', (req, res) => {
 });
 
 // Report a broken or outdated link
-app.post('/api/report-broken-link', (req, res) => {
+apiRouter.post('/report-broken-link', (req, res) => {
     try {
         const { jurisdiction, jobType, formCode, formName, userEmail, issue, comments } = req.body;
 
@@ -576,11 +584,8 @@ app.post('/api/report-broken-link', (req, res) => {
     }
 });
 
-// Admin authentication - protect all /api/admin routes
-app.use('/api/admin', adminAuth);
-
 // Get database statistics (admin)
-app.get('/api/admin/paperwork-stats', (req, res) => {
+apiRouter.get('/admin/paperwork-stats', (req, res) => {
     try {
         const stats = permitPaperwork.getDatabaseStats();
 
@@ -595,7 +600,7 @@ app.get('/api/admin/paperwork-stats', (req, res) => {
 });
 
 // Get admin summary (admin)
-app.get('/api/admin/paperwork-summary', (req, res) => {
+apiRouter.get('/admin/paperwork-summary', (req, res) => {
     try {
         const summary = permitPaperwork.getAdminSummary();
 
@@ -610,7 +615,7 @@ app.get('/api/admin/paperwork-summary', (req, res) => {
 });
 
 // Get outdated forms (admin)
-app.get('/api/admin/outdated-forms', (req, res) => {
+apiRouter.get('/admin/outdated-forms', (req, res) => {
     try {
         const outdatedForms = permitPaperwork.getOutdatedForms();
 
@@ -628,7 +633,7 @@ app.get('/api/admin/outdated-forms', (req, res) => {
 });
 
 // Get all available jurisdictions with paperwork data
-app.get('/api/paperwork-jurisdictions', (req, res) => {
+apiRouter.get('/paperwork-jurisdictions', (req, res) => {
     try {
         const jurisdictions = permitPaperwork.getAvailableJurisdictions();
 
@@ -655,7 +660,7 @@ const { checkJurisdiction, checkAllLinks, quickCheck } = require('./link-health-
 const { getScheduler } = require('./scraper-scheduler');
 
 // Get scraper health dashboard
-app.get('/api/admin/scraper-health', (req, res) => {
+apiRouter.get('/admin/scraper-health', (req, res) => {
     try {
         const health = scraperHealth.getScraperHealth();
         res.json({ success: true, ...health });
@@ -666,7 +671,7 @@ app.get('/api/admin/scraper-health', (req, res) => {
 });
 
 // Get scraper run history
-app.get('/api/admin/scraper-runs', (req, res) => {
+apiRouter.get('/admin/scraper-runs', (req, res) => {
     try {
         const runs = scraperHealth.getRunHistory();
         res.json({ success: true, runs, count: runs.length });
@@ -677,7 +682,7 @@ app.get('/api/admin/scraper-runs', (req, res) => {
 });
 
 // Get detail for a specific city's scraper data
-app.get('/api/admin/scraper-detail/:city', (req, res) => {
+apiRouter.get('/admin/scraper-detail/:city', (req, res) => {
     try {
         const city = decodeURIComponent(req.params.city);
         const detail = scraperHealth.getCityScraperDetail(city);
@@ -689,7 +694,7 @@ app.get('/api/admin/scraper-detail/:city', (req, res) => {
 });
 
 // Link health check - quick (unique URLs only)
-app.get('/api/admin/link-check', async (req, res) => {
+apiRouter.get('/admin/link-check', async (req, res) => {
     try {
         console.log('🔗 Starting quick link health check...');
         const result = await quickCheck();
@@ -702,7 +707,7 @@ app.get('/api/admin/link-check', async (req, res) => {
 });
 
 // Link health check - full (all forms, all jurisdictions)
-app.get('/api/admin/link-check/full', async (req, res) => {
+apiRouter.get('/admin/link-check/full', async (req, res) => {
     try {
         console.log('🔗 Starting full link health check...');
         const result = await checkAllLinks();
@@ -715,7 +720,7 @@ app.get('/api/admin/link-check/full', async (req, res) => {
 });
 
 // Link health check - single jurisdiction
-app.get('/api/admin/link-check/:jurisdiction', async (req, res) => {
+apiRouter.get('/admin/link-check/:jurisdiction', async (req, res) => {
     try {
         const jurisdiction = decodeURIComponent(req.params.jurisdiction);
         console.log(`🔗 Checking links for ${jurisdiction}...`);
@@ -728,7 +733,7 @@ app.get('/api/admin/link-check/:jurisdiction', async (req, res) => {
 });
 
 // Scheduler status
-app.get('/api/admin/scheduler', (req, res) => {
+apiRouter.get('/admin/scheduler', (req, res) => {
     try {
         const scheduler = getScheduler();
         res.json({ success: true, ...scheduler.getStatus() });
@@ -739,7 +744,7 @@ app.get('/api/admin/scheduler', (req, res) => {
 });
 
 // Start scheduler
-app.post('/api/admin/scheduler/start', (req, res) => {
+apiRouter.post('/admin/scheduler/start', (req, res) => {
     try {
         const scheduler = getScheduler();
         scheduler.start();
@@ -751,7 +756,7 @@ app.post('/api/admin/scheduler/start', (req, res) => {
 });
 
 // Stop scheduler
-app.post('/api/admin/scheduler/stop', (req, res) => {
+apiRouter.post('/admin/scheduler/stop', (req, res) => {
     try {
         const scheduler = getScheduler();
         scheduler.stop();
@@ -763,7 +768,7 @@ app.post('/api/admin/scheduler/stop', (req, res) => {
 });
 
 // Trigger manual scrape (single city)
-app.post('/api/admin/scrape/:city', async (req, res) => {
+apiRouter.post('/admin/scrape/:city', async (req, res) => {
     try {
         const city = decodeURIComponent(req.params.city);
         console.log(`🏙️ Manual scrape triggered for ${city}`);
@@ -777,7 +782,7 @@ app.post('/api/admin/scrape/:city', async (req, res) => {
 });
 
 // Usage analytics
-app.get('/api/admin/analytics', (req, res) => {
+apiRouter.get('/admin/analytics', (req, res) => {
     try {
         res.json({ success: true, ...analytics.getSummary() });
     } catch (error) {
@@ -786,7 +791,13 @@ app.get('/api/admin/analytics', (req, res) => {
     }
 });
 
-// Health check
+// ===================================================================
+// MOUNT API ROUTER at /api and /api/v1 (backwards compatible)
+// ===================================================================
+app.use('/api/v1', rateLimiter, apiRouter);
+app.use('/api', rateLimiter, apiRouter);
+
+// Health check (stays at root)
 app.get('/health', (req, res) => {
     res.json({
         status: 'ok',
