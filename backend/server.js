@@ -19,8 +19,32 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
-app.use(cors());
+const corsOrigins = process.env.CORS_ORIGINS;
+app.use(cors(corsOrigins ? {
+    origin: corsOrigins.split(',').map(o => o.trim()),
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type']
+} : undefined));
 app.use(express.json());
+
+// Rate limiting
+const rateLimitWindow = Number(process.env.RATE_LIMIT_WINDOW_MS) || 60000;
+const rateLimitMax = Number(process.env.RATE_LIMIT_MAX) || 100;
+const rateLimitStore = new Map();
+
+setInterval(() => rateLimitStore.clear(), rateLimitWindow);
+
+function rateLimiter(req, res, next) {
+    const key = req.ip;
+    const current = rateLimitStore.get(key) || 0;
+    if (current >= rateLimitMax) {
+        return res.status(429).json({ error: 'Too many requests, please try again later.' });
+    }
+    rateLimitStore.set(key, current + 1);
+    next();
+}
+
+app.use('/api/', rateLimiter);
 
 // API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
