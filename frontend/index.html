@@ -515,7 +515,7 @@
         <!-- Header -->
         <header class="text-center mb-12 animate-fade-in">
             <div class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-1.5 rounded-full text-sm font-medium mb-4">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 <span>Powered by Real Permit Data</span>
@@ -572,7 +572,7 @@
                         <label for="jobType" class="block text-sm font-medium text-foreground mb-2">
                             What type of work are you doing? <span class="text-destructive">*</span>
                         </label>
-                        <select id="jobType" required class="form-input w-full px-4 py-2.5 border border-input rounded-md bg-background text-foreground text-base focus:outline-none focus:ring-2 focus:ring-ring">
+                        <select id="jobType" required aria-required="true" class="form-input w-full px-4 py-2.5 border border-input rounded-md bg-background text-foreground text-base focus:outline-none focus:ring-2 focus:ring-ring">
                             <option value="">Select job type...</option>
                             <option value="Electrical Work">Electrical Work</option>
                             <option value="Plumbing">Plumbing</option>
@@ -596,9 +596,9 @@
                                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
-                                <input type="text" id="cityInput" required autocomplete="off" placeholder="Type a city name..." class="form-input w-full pl-10 pr-4 py-2.5 border border-input rounded-md bg-background text-foreground text-base focus:outline-none focus:ring-2 focus:ring-ring" />
+                                <input type="text" id="cityInput" required aria-required="true" autocomplete="off" placeholder="Type a city name..." role="combobox" aria-expanded="false" aria-controls="cityDropdown" aria-autocomplete="list" class="form-input w-full pl-10 pr-4 py-2.5 border border-input rounded-md bg-background text-foreground text-base focus:outline-none focus:ring-2 focus:ring-ring" />
                             </div>
-                            <div id="cityDropdown" class="autocomplete-dropdown"></div>
+                            <div id="cityDropdown" class="autocomplete-dropdown" role="listbox" aria-label="City suggestions"></div>
                         </div>
                         <p class="text-xs text-muted-foreground mt-2 flex items-start gap-1">
                             <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -676,7 +676,7 @@
                         <p class="text-sm text-muted-foreground">See pricing differences across cities you work in</p>
                     </div>
                 </div>
-                <button onclick="toggleComparison()" id="toggleComparisonBtn" class="btn-primary px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium text-sm">
+                <button onclick="toggleComparison()" id="toggleComparisonBtn" class="btn-primary px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium text-sm" aria-expanded="false" aria-controls="comparisonPanel">
                     <span id="toggleBtnText">Compare Cities</span>
                     <svg id="toggleBtnIcon" class="inline-block w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -734,14 +734,14 @@
         </div>
 
         <!-- Loading State -->
-        <div id="loading" class="hidden bg-white border border-border rounded-lg shadow-sm p-12 text-center animate-fade-in">
+        <div id="loading" class="hidden bg-white border border-border rounded-lg shadow-sm p-12 text-center animate-fade-in" aria-live="polite">
             <div class="spinner mx-auto mb-4"></div>
             <p class="text-foreground font-medium mb-2">Analyzing permit requirements & calculating pricing...</p>
             <p class="text-muted-foreground text-sm">This should only take a moment</p>
         </div>
 
         <!-- Results Section -->
-        <div id="results" class="hidden space-y-6">
+        <div id="results" class="hidden space-y-6" aria-live="polite">
             <!-- Print-only header -->
             <div class="print-header">
                 <h2>Permit Assistant Report</h2>
@@ -955,11 +955,11 @@
     </div>
 
     <!-- Template Modal -->
-    <div id="templateModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
+    <div id="templateModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <div class="bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
             <div class="flex items-center justify-between p-6 border-b border-border">
                 <h3 class="text-xl font-bold text-foreground" id="modalTitle">Template</h3>
-                <button onclick="closeModal()" class="text-muted-foreground hover:text-foreground transition-colors">
+                <button onclick="closeModal()" class="text-muted-foreground hover:text-foreground transition-colors" aria-label="Close modal">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -995,7 +995,7 @@
                 <p class="text-sm font-semibold text-foreground" id="errorToastTitle">Error</p>
                 <p class="text-sm text-muted-foreground mt-1" id="errorToastMessage"></p>
             </div>
-            <button onclick="hideError()" class="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0">
+            <button onclick="hideError()" class="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0" aria-label="Dismiss notification">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -1004,7 +1004,7 @@
     </div>
 
     <!-- Dark Mode Toggle -->
-    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode" id="themeToggle">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode" id="themeToggle" aria-label="Toggle dark mode">
         <svg id="sunIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
         </svg>
@@ -1143,6 +1143,7 @@
             document.getElementById('city').value = parts[0];
             document.getElementById('state').value = parts[1] || '';
             cityDropdown.classList.remove('visible');
+            cityInput.setAttribute('aria-expanded', 'false');
             highlightedIndex = -1;
         }
 
@@ -1204,10 +1205,12 @@
 
             cityDropdown.innerHTML = html;
             cityDropdown.classList.add('visible');
+            cityInput.setAttribute('aria-expanded', 'true');
             highlightedIndex = -1;
 
-            // Attach click handlers
+            // Attach click handlers and ARIA roles
             cityDropdown.querySelectorAll('.autocomplete-option').forEach(opt => {
+                opt.setAttribute('role', 'option');
                 opt.addEventListener('mousedown', (e) => {
                     e.preventDefault();
                     setCityFromSelection(opt.dataset.value);
@@ -1237,7 +1240,9 @@
                 });
                 cityDropdown.innerHTML = html;
                 cityDropdown.classList.add('visible');
+                cityInput.setAttribute('aria-expanded', 'true');
                 cityDropdown.querySelectorAll('.autocomplete-option').forEach(opt => {
+                    opt.setAttribute('role', 'option');
                     opt.addEventListener('mousedown', (e) => {
                         e.preventDefault();
                         setCityFromSelection(opt.dataset.value);
@@ -1249,6 +1254,7 @@
         cityInput.addEventListener('blur', () => {
             setTimeout(() => {
                 cityDropdown.classList.remove('visible');
+                cityInput.setAttribute('aria-expanded', 'false');
                 // Auto-parse city/state from typed value
                 const val = cityInput.value.trim();
                 if (val && val.includes(',')) {
@@ -1994,6 +2000,7 @@
         // Toggle comparison panel
         function toggleComparison() {
             const panel = document.getElementById('comparisonPanel');
+            const btn = document.getElementById('toggleComparisonBtn');
             const btnText = document.getElementById('toggleBtnText');
             const btnIcon = document.getElementById('toggleBtnIcon');
 
@@ -2002,6 +2009,7 @@
                 panel.classList.add('animate-fade-in');
                 btnText.textContent = 'Hide Comparison';
                 btnIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />';
+                btn.setAttribute('aria-expanded', 'true');
 
                 // Load jurisdictions if not already loaded
                 if (availableJurisdictions.length === 0) {
@@ -2011,6 +2019,7 @@
                 panel.classList.add('hidden');
                 btnText.textContent = 'Compare Cities';
                 btnIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />';
+                btn.setAttribute('aria-expanded', 'false');
             }
         }
 
