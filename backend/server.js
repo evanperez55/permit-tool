@@ -20,6 +20,16 @@ require('dotenv').config({ path: '../.env' });
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+// Input validation helpers
+function isNonEmptyString(val) {
+    return typeof val === 'string' && val.trim().length > 0;
+}
+
+function isStringArray(val, maxLen = 20) {
+    return Array.isArray(val) && val.length > 0 && val.length <= maxLen &&
+        val.every(item => isNonEmptyString(item));
+}
+
 // Middleware
 const corsOrigins = process.env.CORS_ORIGINS;
 app.use(cors(corsOrigins ? {
@@ -27,7 +37,7 @@ app.use(cors(corsOrigins ? {
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type', 'X-API-Key']
 } : undefined));
-app.use(express.json());
+app.use(express.json({ limit: '100kb' }));
 
 // Rate limiting
 const rateLimitWindow = Number(process.env.RATE_LIMIT_WINDOW_MS) || 60000;
@@ -103,9 +113,9 @@ apiRouter.post('/check-requirements', async (req, res) => {
         } = req.body;
 
         // Validate inputs
-        if (!jobType || !city || !state) {
+        if (!isNonEmptyString(jobType) || !isNonEmptyString(city) || !isNonEmptyString(state)) {
             return res.status(400).json({
-                error: 'Missing required fields: jobType, city, and state are required'
+                error: 'Missing required fields: jobType, city, and state must be non-empty strings'
             });
         }
 
@@ -255,13 +265,13 @@ apiRouter.post('/compare-jurisdictions', (req, res) => {
         const { jurisdictions, jobType } = req.body;
 
         // Validate inputs
-        if (!jurisdictions || !Array.isArray(jurisdictions) || jurisdictions.length === 0) {
+        if (!isStringArray(jurisdictions)) {
             return res.status(400).json({
-                error: 'Missing or invalid jurisdictions array'
+                error: 'jurisdictions must be a non-empty array of strings (max 20)'
             });
         }
 
-        if (!jobType) {
+        if (!isNonEmptyString(jobType)) {
             return res.status(400).json({
                 error: 'Missing required field: jobType'
             });
@@ -303,13 +313,13 @@ apiRouter.post('/jurisdiction-strategy', (req, res) => {
         const { jurisdictions, jobType } = req.body;
 
         // Validate inputs
-        if (!jurisdictions || !Array.isArray(jurisdictions) || jurisdictions.length === 0) {
+        if (!isStringArray(jurisdictions)) {
             return res.status(400).json({
-                error: 'Missing or invalid jurisdictions array'
+                error: 'jurisdictions must be a non-empty array of strings (max 20)'
             });
         }
 
-        if (!jobType) {
+        if (!isNonEmptyString(jobType)) {
             return res.status(400).json({
                 error: 'Missing required field: jobType'
             });
@@ -349,15 +359,15 @@ apiRouter.post('/quick-reference', (req, res) => {
         const { jurisdictions, jobTypes } = req.body;
 
         // Validate inputs
-        if (!jurisdictions || !Array.isArray(jurisdictions) || jurisdictions.length === 0) {
+        if (!isStringArray(jurisdictions)) {
             return res.status(400).json({
-                error: 'Missing or invalid jurisdictions array'
+                error: 'jurisdictions must be a non-empty array of strings (max 20)'
             });
         }
 
-        if (!jobTypes || !Array.isArray(jobTypes) || jobTypes.length === 0) {
+        if (!isStringArray(jobTypes)) {
             return res.status(400).json({
-                error: 'Missing or invalid jobTypes array'
+                error: 'jobTypes must be a non-empty array of strings (max 20)'
             });
         }
 

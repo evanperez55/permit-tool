@@ -31,6 +31,12 @@ class PDFParser {
         try {
             console.log('📄 Parsing PDF...');
 
+            // Validate PDF magic bytes (%PDF-)
+            const header = buffer.slice(0, 5).toString('ascii');
+            if (header !== '%PDF-') {
+                throw new Error('Invalid PDF structure');
+            }
+
             // Load PDF document
             const loadingTask = pdfjsLib.getDocument({
                 data: new Uint8Array(buffer),
